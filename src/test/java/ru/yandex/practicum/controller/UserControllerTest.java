@@ -1,13 +1,10 @@
 package ru.yandex.practicum.controller;
 
-import org.apache.tomcat.jni.Local;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.User;
 
-import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
