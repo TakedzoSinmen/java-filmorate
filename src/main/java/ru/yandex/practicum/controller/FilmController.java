@@ -1,5 +1,6 @@
 package ru.yandex.practicum.controller;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.exception.CustomValidationException;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Data
 @Slf4j
 @RestController
 @RequestMapping("/films")
@@ -62,7 +64,7 @@ public class FilmController {
         if (film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
             throw new CustomValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
-        if (film.getDuration().isNegative()) {
+        if (film.getDuration() < 0) {
             throw new CustomValidationException("Продолжительность фильма должна быть положительной");
         }
     }

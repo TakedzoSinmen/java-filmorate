@@ -1,5 +1,6 @@
 package ru.yandex.practicum.controller;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.exception.CustomValidationException;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Data
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -66,5 +68,4 @@ public class UserController {
             throw new CustomValidationException("Дата рождения не может быть в будущем");
         }
     }
-
 }
