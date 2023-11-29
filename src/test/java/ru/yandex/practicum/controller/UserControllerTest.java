@@ -2,6 +2,7 @@ package ru.yandex.practicum.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.User;
 
@@ -56,11 +57,15 @@ class UserControllerTest {
 
     @Test
     void givenWrongUser_whenPostRequest_thenThrowException() {
-        assertThrows(CustomValidationException.class, () -> userController.addUser(user1));
+        Executable executable = () -> userController.addUser(user1);
+
+        assertThrows(CustomValidationException.class, executable);
     }
 
     @Test
     void givenWrongUser_whenPutRequest_thenThrowException() {
-        assertThrows(CustomValidationException.class, () -> userController.updateUser(user1));
+        Executable executable = () -> userController.updateUser(user1);
+
+        assertThrows(CustomValidationException.class, executable);
     }
 }
