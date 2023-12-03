@@ -5,7 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.service.UserService;
+import ru.yandex.practicum.storage.api.InMemoryUserStorage;
+import ru.yandex.practicum.storage.impl.UserStorage;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,7 +23,9 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+        UserService userService = new UserService(userStorage);
+        userController = new UserController(userStorage, userService);
         user1 = new User(1, "", "", "", LocalDate.of(2222, 10, 10));
         user2 = new User(0, "mail@mail.com", "Nagibator228", "Robert",
                 LocalDate.of(1989, 9, 13));
@@ -43,7 +49,7 @@ class UserControllerTest {
     @Test
     void givenUser_whenUpdateUserMethod_thenFillMap() {
         userController.addUser(user2);
-        User newUser = new User();
+        User newUser = new User(1212, "", "", "", LocalDate.now());
         newUser.setId(1);
         newUser.setEmail("mmm@mmm.mm");
         newUser.setLogin("Rocky");

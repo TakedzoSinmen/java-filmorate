@@ -3,14 +3,12 @@ package ru.yandex.practicum.controller;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.service.FilmService;
+import ru.yandex.practicum.storage.impl.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Slf4j
@@ -20,52 +18,36 @@ public class FilmController {
 
     private static final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
 
-    private final Map<Integer, Film> films = new HashMap<>();
-
-    private int id = 1;
-
-    private void generateId() {
-        id++;
-    }
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
     @GetMapping
     public List<Film> getFilms() {
-        return new ArrayList<>(films.values());
+        return filmStorage.getFilms();
     }
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) {
-        validateBody(film);
-        film.setId(id);
-        films.put(id, film);
-        generateId();
-        return film;
+        return filmStorage.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        validateBody(film);
-        Film newFilm = films.get(film.getId());
-        if (newFilm != null) {
-            films.put(film.getId(), film);
-            return film;
-        } else {
-            throw new CustomValidationException("Фильм не найден");
-        }
+        return filmStorage.updateFilm(film);
     }
 
-    private static void validateBody(Film film) throws CustomValidationException {
-        if (film.getName().isEmpty()) {
-            throw new CustomValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription().length() > 200) {
-            throw new CustomValidationException("Описание фильма не может превышать 200 символов");
-        }
-        if (film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
-            throw new CustomValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() < 0) {
-            throw new CustomValidationException("Продолжительность фильма должна быть положительной");
-        }
+    @PutMapping ("films/{id}/like/{userId}")
+    public boolean like (@PathVariable Integer id, @PathVariable Integer userId) {
+        return filmService.like(id, userId);
+    }
+
+    @DeleteMapping ("films/{id}/like/{userId}")
+    public boolean unLike (@PathVariable Integer id, @PathVariable Integer userId) {
+        return filmService.unlike(id, userId);
+    }
+
+    @GetMapping ("films/popular")
+    public List<Film> getTopCountOr10Films (@RequestParam (required = false, defaultValue = "10") Integer count) {
+        return filmService.getTopCountOr10Films(count);
     }
 }

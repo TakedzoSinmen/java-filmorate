@@ -3,14 +3,11 @@ package ru.yandex.practicum.controller;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.service.UserService;
+import ru.yandex.practicum.storage.impl.UserStorage;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Slf4j
@@ -18,54 +15,46 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
-
-    private int id = 1;
-
-    private void generateId() {
-        id++;
-    }
+    private final UserStorage userStorage;
+    private final UserService userService;
 
     @PostMapping
     public User addUser(@RequestBody User user) {
-        validateBody(user);
-        user.setId(id);
-        users.put(id, user);
-        generateId();
-        return user;
+        return userStorage.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@RequestBody User user) {
-        validateBody(user);
-        log.info("запрос PUT/users");
-        User newUser = users.get(user.getId());
-        if (newUser != null) {
-            users.put(user.getId(), user);
-            return user;
-        } else {
-            throw new CustomValidationException("пользователь не найден");
-        }
+        return userStorage.updateUser(user);
     }
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("запрос GET/users");
-        return new ArrayList<>(users.values());
+        return userStorage.getUsers();
     }
 
-    private static void validateBody(User user) throws CustomValidationException {
-        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            throw new CustomValidationException("Некорректный адрес электронной почты");
-        }
-        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
-            throw new CustomValidationException("Некорректный логин");
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            throw new CustomValidationException("Дата рождения не может быть в будущем");
-        }
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Integer id) {
+        return userStorage.getUserById(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        return userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        return userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<Integer> searchForUserFriends(@PathVariable Integer id) {
+        return userService.searchForUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<Integer> searchForSameFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        return userService.searchForSameFriends(id, otherId);
     }
 }
