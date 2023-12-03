@@ -31,11 +31,11 @@ public class Film {
         this.duration = duration;
     }
 
-    public void like (Integer id) {
+    public void like(Integer id) {
         likes.add(id);
     }
 
-    public void unlike (Integer id) {
+    public void unlike(Integer id) {
         likes.remove(id);
     }
 }

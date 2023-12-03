@@ -78,7 +78,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<Integer> searchForUserFriends (Integer id) {
+    public List<Integer> searchForUserFriends(Integer id) {
         User user = users.get(id);
         if (user == null) {
             throw new EntityNotFoundException("Пользователя с id: " + id + " не найдено");
@@ -91,5 +91,4 @@ public class InMemoryUserStorage implements UserStorage {
         }
         return result;
     }
-
 }

@@ -9,7 +9,6 @@ import ru.yandex.practicum.service.UserService;
 import ru.yandex.practicum.storage.api.InMemoryUserStorage;
 import ru.yandex.practicum.storage.impl.UserStorage;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
