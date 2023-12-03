@@ -7,7 +7,6 @@ import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
 import ru.yandex.practicum.storage.impl.FilmStorage;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -15,8 +14,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-
-    private static final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
 
     private final FilmStorage filmStorage;
     private final FilmService filmService;
@@ -36,18 +33,28 @@ public class FilmController {
         return filmStorage.updateFilm(film);
     }
 
-    @PutMapping("films/{id}/like/{userId}")
-    public boolean like(@PathVariable Integer id, @PathVariable Integer userId) {
+    @PutMapping("/{id}/like/{userId}")
+    public boolean like(@PathVariable(value = "id") Integer id, @PathVariable(value = "userId") Integer userId) {
         return filmService.like(id, userId);
     }
 
-    @DeleteMapping("films/{id}/like/{userId}")
-    public boolean unLike(@PathVariable Integer id, @PathVariable Integer userId) {
+    @DeleteMapping("/{id}/like/{userId}")
+    public boolean unLike(@PathVariable(value = "id") Integer id, @PathVariable(value = "userId") Integer userId) {
         return filmService.unlike(id, userId);
     }
 
-    @GetMapping("films/popular")
+    @GetMapping("/popular")
     public List<Film> getTopCountOr10Films(@RequestParam(required = false, defaultValue = "10") Integer count) {
         return filmService.getTopCountOr10Films(count);
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable(value = "id") Integer id) {
+        return filmStorage.getFilmById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public Film deleteFilmById(@PathVariable(value = "id") Integer id) {
+        return filmStorage.deleteFilmById(id);
     }
 }

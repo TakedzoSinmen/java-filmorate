@@ -13,4 +13,6 @@ public interface FilmStorage {
     List<Film> getFilms();
 
     Film getFilmById(Integer id);
+
+    Film deleteFilmById(Integer id);
 }

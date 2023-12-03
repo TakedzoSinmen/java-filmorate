@@ -1,28 +1,25 @@
 package ru.yandex.practicum.service;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.storage.impl.UserStorage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 @Service
 @Slf4j
 @Data
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public User addFriend(Integer coreId, Integer friendId) {
         User coreUser = userStorage.getUserById(coreId);
@@ -56,16 +53,36 @@ public class UserService {
         return coreUser;
     }
 
-    public List<Integer> searchForUserFriends(Integer id) {
-        return userStorage.searchForUserFriends(id);
+    public List<User> searchForUserFriends(Integer id) {
+        User user = userStorage.getUserById(id);
+        if (user.getFriends().isEmpty()) {
+            throw new EntityNotFoundException("у пользователя с id: " + id + " список друзей пуст");
+        }
+        List<User> userFriends = new ArrayList<>();
+        for (Integer friend : user.getFriends()) {
+            userFriends.add(userStorage.getUserById(friend));
+        }
+        return userFriends;
     }
 
-    public List<Integer> searchForSameFriends(Integer id, Integer otherId) {
-        List<Integer> result = new ArrayList<>();
-        for (Integer searchForUserFriend : searchForUserFriends(id)) {
-            for (Integer forUserFriend : searchForUserFriends(otherId)) {
-                if (Objects.equals(searchForUserFriend, forUserFriend)) {
-                    result.add(searchForUserFriend);
+    public List<User> searchForSameFriends(Integer id, Integer otherId) {
+        List<User> result = new ArrayList<>();
+        User coreUser = userStorage.getUserById(id);
+        if (coreUser == null) {
+            throw new EntityNotFoundException("пользователя с id: " + id + " не найдено");
+        }
+        User otherUser = userStorage.getUserById(otherId);
+        if (otherUser == null) {
+            throw new EntityNotFoundException("пользователя с id: " + otherId + " не найдено");
+        }
+        List<Integer> coreUserFriendsId = new ArrayList<>(coreUser.getFriends());
+        if (coreUserFriendsId.isEmpty()) {
+            return Collections.emptyList();
+        }
+        for (Integer integer : coreUserFriendsId) {
+            for (Integer friend : otherUser.getFriends()) {
+                if (Objects.equals(integer, friend)) {
+                    result.add(userStorage.getUserById(integer));
                 }
             }
         }

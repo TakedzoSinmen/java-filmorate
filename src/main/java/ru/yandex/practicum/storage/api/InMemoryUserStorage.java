@@ -76,19 +76,4 @@ public class InMemoryUserStorage implements UserStorage {
             throw new CustomValidationException("Дата рождения не может быть в будущем");
         }
     }
-
-    @Override
-    public List<Integer> searchForUserFriends(Integer id) {
-        User user = users.get(id);
-        if (user == null) {
-            throw new EntityNotFoundException("Пользователя с id: " + id + " не найдено");
-        }
-        List<Integer> result = new ArrayList<>();
-        for (Integer friendId : user.getFriends()) {
-            if (users.containsKey(friendId)) {
-                result.add(friendId);
-            }
-        }
-        return result;
-    }
 }

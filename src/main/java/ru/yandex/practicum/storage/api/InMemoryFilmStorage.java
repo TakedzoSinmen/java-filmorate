@@ -57,9 +57,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film getFilmById(Integer id) {
         if (!films.containsKey(id)) {
-            throw new EntityNotFoundException("Фильма с указанным: " + id + ", не найдено");
+            throw new EntityNotFoundException("Фильма с указанным id: " + id + ", не найдено");
         }
         return films.get(id);
+    }
+
+    @Override
+    public Film deleteFilmById(Integer id) {
+        if (!films.containsKey(id)) {
+            throw new EntityNotFoundException("Фильма с указанным id: " + id + ", не найдено");
+        } else {
+            return films.remove(id);
+        }
     }
 
     private static void validateBody(Film film) throws CustomValidationException {
