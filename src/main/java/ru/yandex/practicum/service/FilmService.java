@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
-import ru.yandex.practicum.storage.impl.FilmStorage;
-import ru.yandex.practicum.storage.impl.UserStorage;
+import ru.yandex.practicum.storage.api.FilmStorage;
+import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,5 +47,25 @@ public class FilmService {
         List<Film> result = filmStorage.getFilms();
         result.sort(COMPARATOR_LIKES);
         return result.stream().limit(count).collect(Collectors.toList());
+    }
+
+    public List<Film> getFilms() {
+        return filmStorage.getFilms();
+    }
+
+    public Film addFilm(Film film) {
+        return filmStorage.addFilm(film);
+    }
+
+    public Film updateFilm(Film film) {
+        return filmStorage.updateFilm(film);
+    }
+
+    public Film getFilmById(Integer id) {
+        return filmStorage.getFilmById(id);
+    }
+
+    public Film deleteFilmById(Integer id) {
+        return filmStorage.deleteFilmById(id);
     }
 }

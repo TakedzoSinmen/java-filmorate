@@ -1,11 +1,10 @@
-package ru.yandex.practicum.controller;
+package ru.yandex.practicum.controller.api;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
-import ru.yandex.practicum.storage.impl.FilmStorage;
 
 import java.util.List;
 
@@ -15,22 +14,21 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     @GetMapping
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmService.getFilms();
     }
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) {
-        return filmStorage.addFilm(film);
+        return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        return filmStorage.updateFilm(film);
+        return filmService.updateFilm(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -50,11 +48,11 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable(value = "id") Integer id) {
-        return filmStorage.getFilmById(id);
+        return filmService.getFilmById(id);
     }
 
     @DeleteMapping("/{id}")
     public Film deleteFilmById(@PathVariable(value = "id") Integer id) {
-        return filmStorage.deleteFilmById(id);
+        return filmService.deleteFilmById(id);
     }
 }

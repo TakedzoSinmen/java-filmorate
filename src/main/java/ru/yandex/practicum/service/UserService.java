@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.User;
-import ru.yandex.practicum.storage.impl.UserStorage;
+import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,6 +87,22 @@ public class UserService {
             }
         }
         return result;
+    }
+
+    public User addUser(User user) {
+        return userStorage.addUser(user);
+    }
+
+    public User updateUser(User user) {
+        return userStorage.updateUser(user);
+    }
+
+    public List<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
+    public User getUserById(Integer id) {
+        return userStorage.getUserById(id);
     }
 }
 

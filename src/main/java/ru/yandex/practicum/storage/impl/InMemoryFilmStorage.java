@@ -1,4 +1,4 @@
-package ru.yandex.practicum.storage.api;
+package ru.yandex.practicum.storage.impl;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Film;
-import ru.yandex.practicum.storage.impl.FilmStorage;
+import ru.yandex.practicum.storage.api.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

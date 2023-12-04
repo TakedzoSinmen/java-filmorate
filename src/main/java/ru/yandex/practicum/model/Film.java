@@ -13,6 +13,7 @@ import java.util.Set;
 @EqualsAndHashCode
 @NoArgsConstructor
 @Component
+@AllArgsConstructor
 public class Film {
 
     private final Set<Integer> likes = new HashSet<>();
@@ -22,14 +23,6 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private Integer duration;
-
-    public Film(Integer id, String name, String description, LocalDate releaseDate, Integer duration) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-    }
 
     public void like(Integer id) {
         likes.add(id);

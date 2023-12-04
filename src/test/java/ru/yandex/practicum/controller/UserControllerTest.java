@@ -3,11 +3,12 @@ package ru.yandex.practicum.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import ru.yandex.practicum.controller.api.UserController;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.UserService;
-import ru.yandex.practicum.storage.api.InMemoryUserStorage;
-import ru.yandex.practicum.storage.impl.UserStorage;
+import ru.yandex.practicum.storage.impl.InMemoryUserStorage;
+import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.time.LocalDate;
 
@@ -24,7 +25,7 @@ class UserControllerTest {
     void setUp() {
         UserStorage userStorage = new InMemoryUserStorage();
         UserService userService = new UserService(userStorage);
-        userController = new UserController(userStorage, userService);
+        userController = new UserController(userService);
         user1 = new User(1, "", "", "", LocalDate.of(2222, 10, 10));
         user2 = new User(0, "mail@mail.com", "Nagibator228", "Robert",
                 LocalDate.of(1989, 9, 13));
