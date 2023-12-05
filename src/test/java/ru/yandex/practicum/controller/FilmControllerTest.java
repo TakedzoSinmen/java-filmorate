@@ -3,8 +3,14 @@ package ru.yandex.practicum.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import ru.yandex.practicum.controller.api.FilmController;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.service.FilmService;
+import ru.yandex.practicum.storage.impl.InMemoryFilmStorage;
+import ru.yandex.practicum.storage.impl.InMemoryUserStorage;
+import ru.yandex.practicum.storage.api.FilmStorage;
+import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.time.LocalDate;
 
@@ -19,7 +25,10 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        UserStorage userStorage = new InMemoryUserStorage();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+        filmController = new FilmController(filmService);
         film = new Film(22, "", "", LocalDate.of(1777, 9, 2), -1);
         film2 = new Film(1, "Марко Поло", "Драмеди про похождения друзей",
                 LocalDate.of(2000, 10, 8), 135);
@@ -57,7 +66,7 @@ class FilmControllerTest {
     void givenRightFilm_whenUpdateFilm_thenMapValueUpdated() {
         filmController.addFilm(film2);
 
-        Film newFilm = new Film();
+        Film newFilm = new Film(222, "", "", LocalDate.now(), 222);
         newFilm.setId(film2.getId());
         newFilm.setName("Друзья");
         newFilm.setDescription("Ромком в классическом стиле");

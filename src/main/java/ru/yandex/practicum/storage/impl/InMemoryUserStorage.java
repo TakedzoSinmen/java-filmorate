@@ -1,10 +1,12 @@
-package ru.yandex.practicum.controller;
+package ru.yandex.practicum.storage.impl;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.exception.CustomValidationException;
+import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,22 +14,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Data
 @Slf4j
-@RestController
-@RequestMapping("/users")
-public class UserController {
+@Component
+@Data
+public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Integer, User> users = new HashMap<>();
-
     private int id = 1;
 
     private void generateId() {
         id++;
     }
 
-    @PostMapping
-    public User addUser(@RequestBody User user) {
+    @Override
+    public User addUser(User user) {
         validateBody(user);
         user.setId(id);
         users.put(id, user);
@@ -35,8 +35,8 @@ public class UserController {
         return user;
     }
 
-    @PutMapping
-    public User updateUser(@RequestBody User user) {
+    @Override
+    public User updateUser(User user) {
         validateBody(user);
         log.info("запрос PUT/users");
         User newUser = users.get(user.getId());
@@ -48,10 +48,18 @@ public class UserController {
         }
     }
 
-    @GetMapping
+    @Override
     public List<User> getUsers() {
         log.info("запрос GET/users");
         return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public User getUserById(Integer id) {
+        if (!users.containsKey(id)) {
+            throw new EntityNotFoundException("Пользователя с id: " + id + " не найдено");
+        }
+        return users.get(id);
     }
 
     private static void validateBody(User user) throws CustomValidationException {
