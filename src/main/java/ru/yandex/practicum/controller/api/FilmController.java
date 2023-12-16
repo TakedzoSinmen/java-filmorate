@@ -1,17 +1,18 @@
 package ru.yandex.practicum.controller.api;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
 
 import java.util.List;
 
-@Data
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@AllArgsConstructor
 public class FilmController {
 
     private final FilmService filmService;
@@ -37,8 +38,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public boolean unLike(@PathVariable(value = "id") Integer id, @PathVariable(value = "userId") Integer userId) {
-        return filmService.unlike(id, userId);
+    public void unLike(@PathVariable(value = "id") Integer id, @PathVariable(value = "userId") Integer userId) {
+        filmService.unlike(id, userId);
     }
 
     @GetMapping("/popular")
@@ -52,7 +53,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}")
-    public Film deleteFilmById(@PathVariable(value = "id") Integer id) {
-        return filmService.deleteFilmById(id);
+    public ResponseEntity<String> deleteFilmById(@PathVariable(value = "id") Integer id) {
+        filmService.deleteFilmById(id);
+        return ResponseEntity.ok("Film with ID " + id + " has been successfully deleted");
     }
 }

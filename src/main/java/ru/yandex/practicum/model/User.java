@@ -1,41 +1,28 @@
 package ru.yandex.practicum.model;
 
 import lombok.*;
-import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
-@Component
+@AllArgsConstructor
 public class User {
-
-    private final Set<Integer> friends = new HashSet<>();
-
-    private Integer id;
+    private int id;
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Email should be valid")
     private String email;
+    @NotBlank(message = "Login cannot be empty")
+    @Pattern(regexp = "^\\S+$", message = "Login cannot contain spaces")
     private String login;
     private String name;
+    @Past(message = "Birthday cannot be in the future")
     private LocalDate birthday;
-
-    public User(Integer id, String email, String login, String name, LocalDate birthday) {
-        this.id = id;
-        this.email = email;
-        this.login = login;
-        this.name = name;
-        this.birthday = birthday;
-    }
-
-    public void addFriend(Integer id) {
-        friends.add(id);
-    }
-
-    public void removeFriend(Integer id) {
-        friends.remove(id);
-    }
+    private List<User> friends = new ArrayList<>();
 }

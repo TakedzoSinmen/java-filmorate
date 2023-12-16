@@ -1,34 +1,32 @@
 package ru.yandex.practicum.model;
 
 import lombok.*;
-import org.springframework.stereotype.Component;
+import ru.yandex.practicum.model.validation.ValidReleaseDate;
 
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
-@Component
 @AllArgsConstructor
 public class Film {
-
-    private final Set<Integer> likes = new HashSet<>();
-
-    private Integer id;
+    private int id;
+    @NotBlank(message = "Title cannot be empty")
+    @NotNull(message = "Title cannot be empty")
     private String name;
+    @Size(max = 200, message = "Description cannot be more than 200 characters")
     private String description;
+    @ValidReleaseDate
     private LocalDate releaseDate;
+    @Positive(message = "Film duration must be positive")
     private Integer duration;
-
-    public void like(Integer id) {
-        likes.add(id);
-    }
-
-    public void unlike(Integer id) {
-        likes.remove(id);
-    }
+    private Integer rate;
+    private List<Genre> genres = new ArrayList<>();
+    private Mpa mpa;
 }

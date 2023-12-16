@@ -3,6 +3,7 @@ package ru.yandex.practicum.storage.api;
 import ru.yandex.practicum.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserStorage {
 
@@ -12,5 +13,15 @@ public interface UserStorage {
 
     List<User> getUsers();
 
-    User getUserById(Integer id);
+    Optional<User> getUserById(Integer id);
+
+    void deleteUserById(int id);
+
+    List<User> searchForUserFriends(int id);
+
+    void removeFriend(int userId, int friendId);
+
+    void addFriend(int userId, int friendId);
+
+    List<User> searchForSameFriends(int userId, int idFriend);
 }
