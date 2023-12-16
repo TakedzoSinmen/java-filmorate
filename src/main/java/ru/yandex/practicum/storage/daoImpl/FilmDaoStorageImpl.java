@@ -2,6 +2,7 @@ package ru.yandex.practicum.storage.daoImpl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +40,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
     private RowMapper<Film> mapToFilm() {
         return new RowMapper<Film>() {
             @Override
-            public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public Film mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
                 Film film = new Film();
                 film.setId(rs.getInt("film_id"));
                 film.setName(rs.getString("film_name"));
