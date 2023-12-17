@@ -1,3 +1,3 @@
 # java-filmorate
-Структура связей БД
-![Entity Relationship Diagram (5).jpg](..%2F..%2FDownloads%2FEntity%20Relationship%20Diagram%20%285%29.jpg)
+Схема реляционной бд
+![Entity Relationship Diagram (5)](https://github.com/AzamatKarabashev/java-filmorate/assets/137682946/21a69d2e-8d22-43ad-b43b-4f63901dad46)
