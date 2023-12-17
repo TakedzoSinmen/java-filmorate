@@ -14,9 +14,9 @@ import ru.yandex.practicum.storage.api.LikeStorage;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Repository
 @AllArgsConstructor
-@Slf4j
 public class LikeStorageImpl implements LikeStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -42,7 +42,7 @@ public class LikeStorageImpl implements LikeStorage {
         String query = "DELETE FROM Like_Film WHERE film_id=? AND user_id=?";
         int deleteResult = jdbcTemplate.update(query, filmId, userId);
         if (deleteResult > 0) {
-            log.info("User with ID {} has removed like for film by ID {}.", userId, filmId);
+            log.debug("User with ID {} has removed like for film by ID {}.", userId, filmId);
             return ResponseEntity.ok("Like removed successfully");
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nothing to delete here");

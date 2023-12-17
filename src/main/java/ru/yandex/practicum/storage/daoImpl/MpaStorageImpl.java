@@ -22,23 +22,20 @@ public class MpaStorageImpl implements MpaStorage {
         return new RowMapper<Mpa>() {
             @Override
             public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
-                return new Mpa(
-                        rs.getInt("mpa_id"),
-                        rs.getString("mpa_name")
-                );
+                return new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name"));
             }
         };
     }
 
     @Override
     public Optional<Mpa> getMpaById(int id) {
-        String query = "SELECT * FROM Mpa WHERE mpa_id=?";
+        String query = "SELECT mpa_id, mpa_name FROM Mpa WHERE mpa_id=?";
         return Optional.ofNullable(jdbcTemplate.queryForObject(query, mpaRowMapper(), id));
     }
 
     @Override
     public List<Mpa> getAllMpa() {
-        String query = "SELECT * FROM Mpa";
+        String query = "SELECT mpa_id, mpa_name FROM Mpa";
         return jdbcTemplate.query(query, mpaRowMapper());
     }
 }

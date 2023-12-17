@@ -1,7 +1,6 @@
 package ru.yandex.practicum.service;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import ru.yandex.practicum.storage.api.UserStorage;
 import java.util.List;
 
 @Service
-@Slf4j
 @Data
 public class UserService {
 

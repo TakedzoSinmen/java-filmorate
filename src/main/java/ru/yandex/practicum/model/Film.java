@@ -1,8 +1,9 @@
 package ru.yandex.practicum.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.model.validation.ValidReleaseDate;
-
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

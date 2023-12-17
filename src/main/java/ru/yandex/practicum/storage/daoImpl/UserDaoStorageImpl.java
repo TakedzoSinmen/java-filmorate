@@ -7,18 +7,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.*;
 
-@Repository
 @Slf4j
+@Repository
 @AllArgsConstructor
 @Qualifier("userDaoStorageImpl")
 public class UserDaoStorageImpl implements UserStorage {
@@ -48,8 +46,8 @@ public class UserDaoStorageImpl implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        String query = "SELECT * FROM User_Filmorate";
-        log.info("All users returned from DB");
+        String query = "SELECT user_id, email, login, name_user, birthday FROM User_Filmorate";
+        log.debug("All users returned from DB");
         return jdbcTemplate.query(query, this::mapToUser);
     }
 
@@ -60,13 +58,13 @@ public class UserDaoStorageImpl implements UserStorage {
                 .usingGeneratedKeyColumns("user_id");
         Number key = simpleJdbcInsert.executeAndReturnKey(userToMap(user));
         user.setId((Integer) key);
-        log.info("User with ID {} saved.", user.getId());
+        log.debug("User with ID {} saved.", user.getId());
         return user;
     }
 
     @Override
     public Optional<User> getUserById(Integer id) {
-        String query = "SELECT * FROM User_Filmorate WHERE user_id=?";
+        String query = "SELECT user_id, email, login, name_user, birthday FROM User_Filmorate WHERE user_id=?";
         return Optional.ofNullable(jdbcTemplate.queryForObject(query, this::mapToUser, id));
     }
 
@@ -81,7 +79,7 @@ public class UserDaoStorageImpl implements UserStorage {
                 user.getBirthday(),
                 userId);
         if (updateResult > 0) {
-            log.info("User with ID {} has been updated.", userId);
+            log.debug("User with ID {} has been updated.", userId);
         } else {
             throw new EntityNotFoundException("User not founded for update by ID=" + userId);
         }
@@ -105,7 +103,7 @@ public class UserDaoStorageImpl implements UserStorage {
                 "FROM User_Filmorate uf " +
                 "JOIN Friendship f ON uf.user_id = f.friend_id " +
                 "WHERE f.user_id = ?";
-        log.info("All friends of user by ID {} returned from DB", id);
+        log.debug("All friends of user by ID {} returned from DB", id);
         return jdbcTemplate.query(query, this::mapToUser, id);
     }
 
@@ -132,14 +130,14 @@ public class UserDaoStorageImpl implements UserStorage {
                 "WHERE user_id = ? AND friend_id = ?)";
         int insertResult = jdbcTemplate.update(query, userId, friendId, userId, friendId);
         if (insertResult > 0) {
-            log.info("User with ID {} has been added in friends of user by ID {}.", friendId, userId);
+            log.debug("User with ID {} has been added in friends of user by ID {}.", friendId, userId);
         }
     }
 
     @Override
     public List<User> searchForSameFriends(int userId, int friendId) {
         List<User> commonFriends = new ArrayList<>();
-        String query = "SELECT u.* FROM Friendship f1 " +
+        String query = "SELECT u.user_id, u.email, u.login, u.name_user, u.birthday FROM Friendship f1 " +
                 "INNER JOIN Friendship f2 ON f1.friend_id = f2.friend_id " +
                 "INNER JOIN User_Filmorate u ON f1.friend_id = u.user_id " +
                 "WHERE f1.user_id = ? AND f2.user_id = ? AND f1.friend_id = f2.friend_id";
@@ -150,20 +148,5 @@ public class UserDaoStorageImpl implements UserStorage {
                     .orElseThrow(() -> new EntityNotFoundException("Common friend not exist in DB with ID=" + id)));
         }
         return commonFriends;
-    }
-
-    private static void validateBody(User user) throws CustomValidationException {
-        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            throw new CustomValidationException("Некорректный адрес электронной почты");
-        }
-        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
-            throw new CustomValidationException("Некорректный логин");
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            throw new CustomValidationException("Дата рождения не может быть в будущем");
-        }
     }
 }

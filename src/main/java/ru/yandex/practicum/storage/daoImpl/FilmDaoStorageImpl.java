@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
 @AllArgsConstructor
 @Qualifier("filmDaoStorageImpl")
-@Slf4j
 public class FilmDaoStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -61,7 +61,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
         values.put("description", film.getDescription());
         values.put("release_date", film.getReleaseDate());
         values.put("duration", film.getDuration());
-        values.put("like_quantity", film.getRate());
+        values.put("rate", film.getRate());
         values.put("mpa_id", film.getMpa().getId());
         return values;
     }
@@ -80,7 +80,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 jdbcTemplate.update(query, film.getId(), genre.getId());
             }
         }
-        log.info("Film with ID {} saved.", film.getId());
+        log.debug("Film with ID {} saved.", film.getId());
         return film;
     }
 
@@ -99,7 +99,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 film.getMpa().getId(),
                 filmId);
         if (updateResult > 0) {
-            log.info("Film with ID {} has been updated.", filmId);
+            log.debug("Film with ID {} has been updated.", filmId);
         } else {
             throw new EntityNotFoundException("Film not founded for update by ID=" + filmId);
         }
@@ -123,14 +123,15 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        String sqlQuery = "SELECT * FROM Film";
+        String sqlQuery = "SELECT film_id, film_name, description, release_date, duration, rate, mpa_id FROM Film";
         return jdbcTemplate.query(sqlQuery, mapToFilm());
     }
 
     @Override
     public Film getFilmById(Integer id) {
         try {
-            String sqlQuery = "SELECT * FROM Film WHERE film_id = ?";
+            String sqlQuery = "SELECT film_id, film_name, description, release_date, duration, rate, " +
+                    "mpa_id FROM Film WHERE film_id = ?";
             return jdbcTemplate.queryForObject(sqlQuery, mapToFilm(), id);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("Film not exist");
@@ -142,15 +143,16 @@ public class FilmDaoStorageImpl implements FilmStorage {
         String query = "DELETE FROM Film WHERE film_id=?";
         int deleteResult = jdbcTemplate.update(query, id);
         if (deleteResult > 0) {
-            log.info("Film with ID {} has been removed.", id);
+            log.debug("Film with ID {} has been removed.", id);
         } else {
-            log.info("Film with ID {} has not been deleted.", id);
+            log.debug("Film with ID {} has not been deleted.", id);
         }
     }
 
     @Override
     public List<Film> getMostNLikedFilms(int count) {
-        String query = "SELECT f.*, COUNT(lf.user_id) AS likes " +
+        String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "f.rate, f.mpa_id, COUNT(lf.user_id) AS likes " +
                 "FROM Film f " +
                 "LEFT JOIN Like_Film lf ON f.film_id = lf.film_id " +
                 "GROUP BY f.film_id " +
@@ -162,23 +164,23 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
     private void entityValidation(Film film) {
         if (film.getName().isBlank() || film.getName().isEmpty()) {
-            log.warn("Ошибка при валидации фильма, не заполнено поле name= {}", film.getName());
+            log.debug("Ошибка при валидации фильма, не заполнено поле name= {}", film.getName());
             throw new BadRequestException("Ошибка при валидации фильма, не заполнено поле name= " + film.getName());
         }
         if (film.getDescription().length() > 200) {
-            log.warn("Ошибка при валидации фильма, длина поля description >200, а именно= {}",
+            log.debug("Ошибка при валидации фильма, длина поля description >200, а именно= {}",
                     film.getDescription().length());
             throw new BadRequestException("Ошибка при валидации фильма, длина поля description >200, а именно= "
                     + film.getDescription().length());
         }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.warn("Ошибка при валидации фильма, дата релиза раньше 28.12.1895, а именно= {}",
+            log.debug("Ошибка при валидации фильма, дата релиза раньше 28.12.1895, а именно= {}",
                     film.getReleaseDate());
             throw new BadRequestException("Ошибка при валидации фильма, дата релиза раньше 28.12.1895, а именно= "
                     + film.getReleaseDate());
         }
         if (film.getDuration() < 0) {
-            log.warn("Ошибка при валидации фильма, отрицательная продолжительность= {}", film.getDuration());
+            log.debug("Ошибка при валидации фильма, отрицательная продолжительность= {}", film.getDuration());
             throw new BadRequestException("Ошибка при валидации фильма, отрицательная продолжительность= "
                     + film.getDuration());
         }

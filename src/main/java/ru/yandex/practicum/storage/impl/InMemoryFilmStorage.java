@@ -1,7 +1,6 @@
 package ru.yandex.practicum.storage.impl;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
@@ -15,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
-@Component
+
 @Data
+@Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private static final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);

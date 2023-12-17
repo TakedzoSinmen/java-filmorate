@@ -35,7 +35,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User updateUser(User user) {
         validateBody(user);
-        log.info("запрос PUT/users");
+        log.debug("запрос PUT/users");
         User newUser = users.get(user.getId());
         if (newUser != null) {
             users.put(user.getId(), user);
@@ -47,7 +47,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        log.info("запрос GET/users");
+        log.debug("запрос GET/users");
         return new ArrayList<>(users.values());
     }
 
