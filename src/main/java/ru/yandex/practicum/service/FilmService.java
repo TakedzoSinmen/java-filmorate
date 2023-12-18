@@ -1,52 +1,53 @@
 package ru.yandex.practicum.service;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Film;
-import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.storage.api.FilmStorage;
+import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @Data
-@RequiredArgsConstructor
 public class FilmService {
 
-    private static final Comparator<Film> COMPARATOR_LIKES = (curFilm, nextFilm) -> nextFilm.getLikes().size() - curFilm.getLikes().size();
-
     private final FilmStorage filmStorage;
+    private final LikeStorage likeStorage;
     private final UserStorage userStorage;
 
+    public FilmService(@Qualifier("filmDaoStorageImpl") FilmStorage filmStorage, LikeStorage likeStorage,
+                       @Qualifier("userDaoStorageImpl") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.likeStorage = likeStorage;
+        this.userStorage = userStorage;
+    }
+
     public boolean like(Integer filmId, Integer userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        film.getLikes().add(userId);
+        likeStorage.like(filmId, userId);
         return true;
     }
 
-    public boolean unlike(Integer filmId, Integer userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        if (film == null) {
-            throw new EntityNotFoundException("фильма с id: " + filmId + " не найдено");
+    public void unlike(Integer filmId, Integer userId) {
+        if (userId < 1) {
+            throw new EntityNotFoundException("User not exist");
         }
-        User user = userStorage.getUserById(userId);
-        if (user == null) {
-            throw new EntityNotFoundException("пользователя с id: " + userId + " не найдено");
+        if (filmId < 1) {
+            throw new EntityNotFoundException("Film not exist");
         }
-        film.getLikes().remove(userId);
-        return true;
+        getFilmById(filmId);
+        userStorage.getUserById(userId);
+        likeStorage.unLike(filmId, userId);
+        log.debug("Удален лайк у фильма с  ID=" + filmId);
     }
 
     public List<Film> getTopCountOr10Films(Integer count) {
-        List<Film> result = filmStorage.getFilms();
-        result.sort(COMPARATOR_LIKES);
-        return result.stream().limit(count).collect(Collectors.toList());
+        return filmStorage.getMostNLikedFilms(count);
     }
 
     public List<Film> getFilms() {
@@ -65,7 +66,7 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
-    public Film deleteFilmById(Integer id) {
-        return filmStorage.deleteFilmById(id);
+    public void deleteFilmById(Integer id) {
+        filmStorage.deleteFilmById(id);
     }
 }

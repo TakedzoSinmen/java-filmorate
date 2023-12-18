@@ -26,9 +26,10 @@ class UserControllerTest {
         UserStorage userStorage = new InMemoryUserStorage();
         UserService userService = new UserService(userStorage);
         userController = new UserController(userService);
-        user1 = new User(1, "", "", "", LocalDate.of(2222, 10, 10));
+        user1 = new User(1, "", "", "", LocalDate.of(2222, 10, 10),
+                null);
         user2 = new User(0, "mail@mail.com", "Nagibator228", "Robert",
-                LocalDate.of(1989, 9, 13));
+                LocalDate.of(1989, 9, 13), null);
     }
 
     @Test
@@ -49,7 +50,7 @@ class UserControllerTest {
     @Test
     void givenUser_whenUpdateUserMethod_thenFillMap() {
         userController.addUser(user2);
-        User newUser = new User(1212, "", "", "", LocalDate.now());
+        User newUser = new User(1212, "", "", "", LocalDate.now(), null);
         newUser.setId(1);
         newUser.setEmail("mmm@mmm.mm");
         newUser.setLogin("Rocky");

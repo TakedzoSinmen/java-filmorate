@@ -1,7 +1,6 @@
 package ru.yandex.practicum.storage.impl;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.exception.CustomValidationException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
@@ -13,10 +12,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Slf4j
-@Component
+
 @Data
+@Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private static final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
@@ -63,12 +63,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film deleteFilmById(Integer id) {
+    public void deleteFilmById(Integer id) {
         if (!films.containsKey(id)) {
             throw new EntityNotFoundException("Фильма с указанным id: " + id + ", не найдено");
         } else {
-            return films.remove(id);
+            films.remove(id);
         }
+    }
+
+    @Override
+    public List<Film> getMostNLikedFilms(int count) {
+        int countTopLikedFilms = count == 0 ? 10 : count;
+        return films.values().stream()
+                .sorted()
+                .limit(countTopLikedFilms)
+                .collect(Collectors.toList());
     }
 
     private static void validateBody(Film film) throws CustomValidationException {
