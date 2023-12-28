@@ -1,4 +1,4 @@
 # java-filmorate
 Схема реляционной бд
 
-![Entity Relationship Diagram](https://github.com/AzamatKarabashev/java-filmorate/assets/137682946/3293794c-bf4c-4bae-b034-458cd2e4d6e6)
+![Entity Relationship Diagram (1).jpg](..%2F..%2FDownloads%2FEntity%20Relationship%20Diagram%20%281%29.jpg)
