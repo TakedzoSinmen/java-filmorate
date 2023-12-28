@@ -69,4 +69,9 @@ public class FilmService {
     public void deleteFilmById(Integer id) {
         filmStorage.deleteFilmById(id);
     }
+
+    // проверка осуществяется в следующем слое
+    public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, String variable) {
+        return filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
+    }
 }

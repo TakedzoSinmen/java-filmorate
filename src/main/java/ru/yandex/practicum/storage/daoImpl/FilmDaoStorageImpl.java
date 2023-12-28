@@ -11,8 +11,10 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.exception.BadRequestException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
+import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.Genre;
+import ru.yandex.practicum.service.DirectorService;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.GenreStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
@@ -36,6 +38,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
     private final GenreStorage genreStorage;
     private final LikeStorage likeStorage;
     private final MpaStorage mpaStorage;
+    private final DirectorService directorService;
 
     private RowMapper<Film> mapToFilm() {
         return new RowMapper<Film>() {
@@ -50,6 +53,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 film.setRate(likeStorage.getLikesByFilmId(rs.getInt("film_id")).size());
                 film.setMpa(mpaStorage.getMpaById(rs.getInt("mpa_id")).get());
                 film.setGenres(genreStorage.getGenresByFilmId(film.getId()));
+                film.setDirectors(getDirectorsByFilmId(film.getId()));
                 return film;
             }
         };
@@ -80,8 +84,23 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 jdbcTemplate.update(query, film.getId(), genre.getId());
             }
         }
+        // добавление режиссеров в базу (по аналогии с жанрами выше, т.к. логика аналогична)
+        if (!film.getDirectors().isEmpty()) {
+            String query = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
+            for (Director director : film.getDirectors()) {
+                jdbcTemplate.update(query, film.getId(), director.getId());
+            }
+        }
+
         log.debug("Film with ID {} saved.", film.getId());
         return film;
+    }
+
+    private List<Director> getDirectorsByFilmId(Integer filmId) {
+        String sql = "SELECT director_id FROM Director_Film WHERE film_id = ?";
+        List<Integer> ids = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("director_id"), filmId);
+
+        return ids.stream().map(directorService::getDirectorById).collect(Collectors.toList());
     }
 
     @Override
@@ -116,6 +135,23 @@ public class FilmDaoStorageImpl implements FilmStorage {
             }
         } else {
             String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
+            jdbcTemplate.update(querySql, filmId);
+        }
+
+        // Обновление режиссёров фильма (не стал менять логику как выше, для прощей читаемости)
+        if (!film.getDirectors().isEmpty()) {
+            String querySql = "DELETE FROM Director_Film WHERE film_id =?";
+            jdbcTemplate.update(querySql, filmId);
+            String insertDirectorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?, ?)";
+            film.setDirectors(film.getDirectors()
+                    .stream()
+                    .distinct()
+                    .collect(Collectors.toList()));
+            for (Director director : film.getDirectors()) {
+                jdbcTemplate.update(insertDirectorQuery, filmId, director.getId());
+            }
+        } else {
+            String querySql = "DELEtE FROM Director_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
         }
         return film;
@@ -160,6 +196,55 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 "LIMIT ?";
         RowMapper<Film> filmRowMapper = mapToFilm();
         return jdbcTemplate.query(query, filmRowMapper, count);
+    }
+
+    // Тут происходит проверка параметра sortBy и уже сама логика сортировки по лайкам или
+    // году релиза в зависимости от параметра. В случае некоректно указанного параметра ->
+    // выбраываем исключение и сообщение пользователю в теле ответа
+    @Override
+    public List<Film> getFilmsByDirectorIdSortBy(String sortBy, int directorId) {
+        isExist(directorId);
+        String sortByYear = "year";
+        String sortByLikes = "likes";
+
+        if (sortBy.equals(sortByYear)) {
+
+            String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                    "f.rate, f.mpa_id " +
+                    "FROM FILM f " +
+                    "JOIN DIRECTOR_FILM df ON f.film_id = df.film_id " +
+                    "JOIN DIRECTOR d ON df.director_id = d.director_id " +
+                    "WHERE df.director_id = ? " +
+                    "ORDER BY f.release_date";
+
+            return jdbcTemplate.query(query, mapToFilm(), directorId);
+        }
+
+        if (sortBy.equals(sortByLikes)) {
+
+            String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                    "f.rate, f.mpa_id " +
+                    "FROM FILM f " +
+                    "LEFT JOIN Like_Film lf ON f.film_id = lf.film_id " +
+                    "JOIN Director_Film df ON df.film_id = f.film_id " +
+                    "WHERE df.director_id = ? " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY COUNT (lf.user_id)";
+
+            return jdbcTemplate.query(query, mapToFilm(), directorId);
+        }
+
+        log.error("Incorrect parameter: {}", sortBy);
+        throw new EntityNotFoundException(String.format("Incorrect parameter: %s", sortBy));
+    }
+
+    // Проверка на существование фильма в базе по id
+    private void isExist(int id) {
+        String sql = "select * from Director where director_id = ?";
+        if (!jdbcTemplate.queryForRowSet(sql, id).next()) {
+            log.warn("Director with id: {} was not found", id);
+            throw new EntityNotFoundException(String.format("Director with id: %d was not found", id));
+        }
     }
 
     private void entityValidation(Film film) {
