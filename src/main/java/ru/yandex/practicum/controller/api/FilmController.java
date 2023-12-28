@@ -65,4 +65,14 @@ public class FilmController {
         filmService.deleteFilmById(id);
         return ResponseEntity.ok("Film with ID " + id + " has been successfully deleted");
     }
+
+    // Новый контроллер для получение всех фильмов определенного режиссёра
+    // отсортированных по лайкам или году релиза
+    // В url приходит айдишник желаемого режиссёра и параметр в виде строки = (like / year)
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirectorId(@PathVariable Integer directorId,
+                                           @RequestParam String sortBy) {
+
+        return filmService.getFilmsByDirectorIdSortBy(directorId, sortBy);
+    }
 }

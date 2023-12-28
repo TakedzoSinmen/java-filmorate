@@ -18,16 +18,13 @@ import java.util.List;
 @AllArgsConstructor
 public class Film {
     private int id;
-    @NotBlank(message = "Title cannot be empty")
-    @NotNull(message = "Title cannot be empty")
     private String name;
-    @Size(max = 200, message = "Description cannot be more than 200 characters")
     private String description;
     @ValidReleaseDate
     private LocalDate releaseDate;
-    @Positive(message = "Film duration must be positive")
     private Integer duration;
     private Integer rate;
     private List<Genre> genres = new ArrayList<>();
     private Mpa mpa;
+    private List<Director> directors = new ArrayList<>();
 }

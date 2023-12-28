@@ -4,8 +4,10 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.exception.CustomExceptionHandler;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.storage.api.DirectorStorage;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
@@ -69,4 +71,10 @@ public class FilmService {
     public void deleteFilmById(Integer id) {
         filmStorage.deleteFilmById(id);
     }
+
+    // проверка осуществяется в следующем слое
+    public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, String variable) {
+        return filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
+    }
+
 }
