@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.service.DirectorService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
