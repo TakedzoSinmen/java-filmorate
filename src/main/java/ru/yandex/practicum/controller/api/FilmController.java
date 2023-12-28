@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -24,13 +25,13 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         log.debug("POST request received to create new film");
         return filmService.addFilm(film);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         log.debug("PUT request received to update film by given entity");
         return filmService.updateFilm(film);
     }
