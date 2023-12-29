@@ -2,6 +2,7 @@ package ru.yandex.practicum.controller.api;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.UserService;
@@ -64,5 +65,12 @@ public class UserController {
     public List<User> searchForSameFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
         log.debug("GET request received to search for common friends if they exist");
         return userService.searchForSameFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUserById (@PathVariable(value = "id") Integer id) {
+        log.debug("DELETE request received to delete User by given id= {}", id);
+        userService.deleteUserById(id);
+        return ResponseEntity.ok("User with ID " + id + " has been successfully deleted");
     }
 }
