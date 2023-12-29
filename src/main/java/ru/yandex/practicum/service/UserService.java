@@ -59,4 +59,8 @@ public class UserService {
             throw new EntityNotFoundException("User with id " + id + " does not exist.");
         }
     }
+
+    public void deleteUserById(Integer id) {
+        userStorage.deleteUserById(id);
+    }
 }
