@@ -66,7 +66,6 @@ public class UserController {
         log.debug("GET request received to search for common friends if they exist");
         return userService.searchForSameFriends(id, otherId);
     }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUserById (@PathVariable(value = "id") Integer id) {
         log.debug("DELETE request received to delete User by given id= {}", id);
