@@ -98,13 +98,13 @@ public class UserDaoStorageImpl implements UserStorage {
 
     @Override
     public List<User> searchForUserFriends(int id) {
-        String userExistQuery = "SELECT COUNT(*) FROM User_Filmorate WHERE user_id = ?";
+        String userExistQuery = "SELECT COUNT(user_id) FROM User_Filmorate WHERE user_id = ?";
         Integer userCount = jdbcTemplate.queryForObject(userExistQuery, Integer.class, id);
         if (userCount == null || userCount == 0) {
             log.debug("User with ID {} does not exist", id);
             throw new EntityNotFoundException("User not detected by ID=" + id);
         } else {
-            String query = "SELECT uf.* " +
+            String query = "SELECT uf.user_id, uf.email, uf.login, uf.name_user, uf.birthday " +
                     "FROM User_Filmorate uf " +
                     "JOIN Friendship f ON uf.user_id = f.friend_id " +
                     "WHERE f.user_id = ?";
