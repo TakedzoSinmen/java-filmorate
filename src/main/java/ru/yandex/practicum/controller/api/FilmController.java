@@ -78,7 +78,7 @@ public class FilmController {
     }
 
     // Получаем строку "query" -> содержащую текст, по которому искать совпадения
-    // а так же List с параметрами (ожидаем title,director или director,title)
+    // а так же List с параметрами (ожидаем title,director или director,title);
     @GetMapping("/search")
     public List<Film> getSearchFilmsByParams(@RequestParam String query,
                                              @RequestParam List<String> by) {
