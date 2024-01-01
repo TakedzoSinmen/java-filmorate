@@ -70,8 +70,22 @@ public class FilmService {
         filmStorage.deleteFilmById(id);
     }
 
-    // проверка осуществяется в следующем слое
     public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, String variable) {
         return filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
+    }
+
+    // проверяем количество параметров в листе и уходим в соответсвующий метод
+    public List<Film> searchFilmsByParams(String query, List<String> params) {
+
+        switch (params.size()) {
+            case 1:
+                return filmStorage.searchFilmsByOneParameter(query, params.get(0));
+
+            case 2:
+                return filmStorage.searchFilmsByBothParameters(query, params);
+
+            default:
+                throw new EntityNotFoundException("Что то не так с параметрами");
+        }
     }
 }
