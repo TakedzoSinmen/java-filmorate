@@ -74,4 +74,8 @@ public class FilmService {
     public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, String variable) {
         return filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
     }
+
+    public List<Film> getFriendCommonFilms(Integer userId, Integer friendId) {
+        return filmStorage.getFriendCommonFilms(userId, friendId);
+    }
 }

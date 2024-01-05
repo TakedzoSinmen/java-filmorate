@@ -76,4 +76,12 @@ public class FilmController {
 
         return filmService.getFilmsByDirectorIdSortBy(directorId, sortBy);
     }
+
+    @GetMapping("/common")
+    public List<Film> getFriendCommonFilms(@RequestParam(name = "userId") Integer userId,
+                                           @RequestParam(name = "friendId") Integer friendId) {
+        log.debug("GET request received to get films shared with a friend sorted by their popularity using " +
+                "userId = {} and friendId = {}", userId, friendId);
+        return filmService.getFriendCommonFilms(userId, friendId);
+    }
 }
