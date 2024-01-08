@@ -198,9 +198,9 @@ public class FilmDaoStorageImpl implements FilmStorage {
         return jdbcTemplate.query(query, filmRowMapper, count);
     }
 
-    // Тут происходит проверка параметра sortBy и уже сама логика сортировки по лайкам или
+    // Проверка параметра sortBy и уже сама логика сортировки по лайкам или
     // году релиза в зависимости от параметра. В случае некоректно указанного параметра ->
-    // выбраываем исключение и сообщение пользователю в теле ответа
+    // выбрасываем исключение и сообщение пользователю в теле ответа
     @Override
     public List<Film> getFilmsByDirectorIdSortBy(String sortBy, int directorId) {
         isExist(directorId);
@@ -236,6 +236,59 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
         log.error("Incorrect parameter: {}", sortBy);
         throw new EntityNotFoundException(String.format("Incorrect parameter: %s", sortBy));
+    }
+
+    public List<Film> searchFilmsByOneParameter(String query, String param) {
+        switch (param) {
+
+            case "title":
+                String sqlByTitle = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
+                        "FROM film f " +
+                        "LEFT JOIN LIKE_FILM lf ON f.film_id = lf.film_id " +
+                        "WHERE REPLACE(LOWER(film_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
+                        "GROUP BY f.film_id " +
+                        "ORDER BY COUNT(lf.like_id) DESC";
+
+                return jdbcTemplate.query(sqlByTitle, mapToFilm());
+
+            case "director":
+                String sqlByDirector = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
+                        "FROM FILM f " +
+                        "JOIN director_film df ON f.film_id = df.film_id " +
+                        "JOIN director d ON d.director_id = df.director_id " +
+                        "JOIN like_film lf ON lf.film_id = f.film_id " +
+                        "WHERE REPLACE(LOWER(d.director_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
+                        "GROUP BY f.film_id " +
+                        "ORDER BY COUNT(lf.like_id) DESC";
+
+                return jdbcTemplate.query(sqlByDirector, mapToFilm());
+
+            default:
+                log.error("Неверно указан параметр {} ", param);
+                throw new EntityNotFoundException(String.format("Неверно указан параметр %s ", param));
+        }
+    }
+
+    public List<Film> searchFilmsByBothParameters(String query, List<String> params) {
+        String titleAndDirector = params.get(0) + "," + params.get(1);
+
+        if (titleAndDirector.equals("title,director")
+                || titleAndDirector.equals("director,title")) {
+            String sqlByBothParams = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
+                    "FROM FILM f " +
+                    "LEFT JOIN director_film df ON f.film_id = df.film_id " +
+                    "LEFT JOIN director d ON d.director_id = df.director_id " +
+                    "LEFT JOIN like_film lf ON lf.film_id = f.film_id " +
+                    "WHERE REPLACE(LOWER(f.film_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
+                    "OR REPLACE(LOWER(d.director_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY f.rate";
+
+            return jdbcTemplate.query(sqlByBothParams, mapToFilm());
+        }
+
+        log.error("Неверно указаны параметры");
+        throw new EntityNotFoundException("Неверно указаны параметры");
     }
 
     // Проверка на существование фильма в базе по id

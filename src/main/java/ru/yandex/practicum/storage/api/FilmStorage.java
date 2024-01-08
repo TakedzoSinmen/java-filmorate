@@ -20,4 +20,8 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirectorIdSortBy(String sortBy, int directorId);
 
+    List<Film> searchFilmsByOneParameter(String query, String param);
+
+    List<Film> searchFilmsByBothParameters(String query, List<String> params);
+
 }
