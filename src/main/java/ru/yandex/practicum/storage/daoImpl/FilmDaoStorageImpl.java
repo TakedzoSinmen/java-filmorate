@@ -332,6 +332,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
         return topFilm;
     }
+
     private void isUserExist(Integer userId) {
         String sql = "SELECT user_id FROM User_Filmorate WHERE user_id = ?";
         if (!jdbcTemplate.queryForRowSet(sql, userId).next()) {
