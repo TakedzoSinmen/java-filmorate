@@ -46,10 +46,6 @@ public class FilmService {
         log.debug("Удален лайк у фильма с  ID=" + filmId);
     }
 
-    public List<Film> getTopCountOr10Films(Integer count) {
-        return filmStorage.getMostNLikedFilms(count);
-    }
-
     public List<Film> getFilms() {
         return filmStorage.getFilms();
     }
@@ -91,5 +87,9 @@ public class FilmService {
 
     public List<Film> getFriendCommonFilms(Integer userId, Integer friendId) {
         return filmStorage.getFriendCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getTopFilmWithFilter(count, genreId, year);
     }
 }

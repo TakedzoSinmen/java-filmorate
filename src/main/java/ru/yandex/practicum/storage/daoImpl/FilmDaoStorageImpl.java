@@ -23,6 +23,7 @@ import ru.yandex.practicum.storage.api.MpaStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,19 +186,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
     }
 
-    @Override
-    public List<Film> getMostNLikedFilms(int count) {
-        String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
-                "f.rate, f.mpa_id, COUNT(lf.user_id) AS likes " +
-                "FROM Film f " +
-                "LEFT JOIN Like_Film lf ON f.film_id = lf.film_id " +
-                "GROUP BY f.film_id " +
-                "ORDER BY likes DESC " +
-                "LIMIT ?";
-        RowMapper<Film> filmRowMapper = mapToFilm();
-        return jdbcTemplate.query(query, filmRowMapper, count);
-    }
-
     // Проверка параметра sortBy и уже сама логика сортировки по лайкам или
     // году релиза в зависимости от параметра. В случае некоректно указанного параметра ->
     // выбрасываем исключение и сообщение пользователю в теле ответа
@@ -310,6 +298,40 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 "GROUP BY f.film_id) AS flf ON ulf.film_id = flf.film_id " +
                 "ORDER BY likes DESC";
         return jdbcTemplate.query(sql, mapToFilm(), userId, friendId);
+    }
+
+    @Override
+    public List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year) {
+        List<Film> topFilm = new ArrayList<>();
+        String yearFilter = "WHERE YEAR(f.release_date) = ? ";
+        String genreFilter = "WHERE gf.genre_id = ? ";
+        String genreJoin = "JOIN Genre_Film AS gf ON f.film_id = gf.film_id ";
+        String genreAndYearFilter = "WHERE gf.genre_id = ? AND YEAR(f.release_date) = ? ";
+        String queryEnd = "GROUP BY f.film_id " +
+                "ORDER BY COUNT(lf.like_id) " +
+                "DESC LIMIT ?";
+        StringBuilder query = new StringBuilder("SELECT f.film_id, f.film_name, f.description," +
+                " f.release_date, f.duration, f.mpa_id " +
+                "FROM Film AS f " +
+                "LEFT JOIN Like_Film AS lf ON f.film_id = lf.film_id ");
+
+        if (genreId == null && year == null) {
+            String sqlString = query.append(queryEnd).toString();
+            topFilm = jdbcTemplate.query(sqlString, mapToFilm(), count);
+        }
+        if (genreId == null && year != null) {
+            String sqlString = query.append(yearFilter).append(queryEnd).toString();
+            topFilm = jdbcTemplate.query(sqlString, mapToFilm(), year, count);
+        }
+        if (genreId != null && year == null) {
+            String sqlString = query.append(genreJoin).append(genreFilter).append(queryEnd).toString();
+            topFilm = jdbcTemplate.query(sqlString, mapToFilm(), genreId, count);
+        }
+        if (genreId != null && year != null) {
+            String sqlString = query.append(genreJoin).append(genreAndYearFilter).append(queryEnd).toString();
+            topFilm = jdbcTemplate.query(sqlString, mapToFilm(), genreId, year, count);
+        }
+        return topFilm;
     }
 
     private void isUserExist(Integer userId) {
