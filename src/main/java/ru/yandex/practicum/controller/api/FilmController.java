@@ -92,7 +92,7 @@ public class FilmController {
     public List<Film> getTopFilmWithFilter(@RequestParam(required = false, defaultValue = "10") Integer count,
                                            @RequestParam(required = false) Integer genreId,
                                            @RequestParam(required = false) Integer year) {
-        log.debug("GET request received to get top 10 films");
+        log.debug("GET the received request to receive the top 10 films with a genre and year filter");
         return filmService.getTopFilmWithFilter(count, genreId, year);
     }
 }

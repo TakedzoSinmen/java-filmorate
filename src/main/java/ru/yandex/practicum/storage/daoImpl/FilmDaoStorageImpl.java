@@ -23,6 +23,7 @@ import ru.yandex.practicum.storage.api.MpaStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -301,7 +302,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
     @Override
     public List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year) {
-        List<Film> topFilm = null;
+        List<Film> topFilm = new ArrayList<>();
         String yearFilter = "WHERE YEAR(f.release_date) = ? ";
         String genreFilter = "WHERE gf.genre_id = ? ";
         String genreJoin = "JOIN Genre_Film AS gf ON f.film_id = gf.film_id ";
