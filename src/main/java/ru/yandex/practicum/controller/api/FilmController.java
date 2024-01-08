@@ -48,12 +48,6 @@ public class FilmController {
         filmService.unlike(id, userId);
     }
 
-    @GetMapping("/popular")
-    public List<Film> getTopCountOr10Films(@RequestParam(required = false, defaultValue = "10") Integer count) {
-        log.debug("GET request received to get top 10 films");
-        return filmService.getTopCountOr10Films(count);
-    }
-
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable(value = "id") Integer id) {
         log.debug("GET request received to get film by given id= {}", id);
@@ -92,5 +86,13 @@ public class FilmController {
         log.debug("GET request received to get films shared with a friend sorted by their popularity using " +
                 "userId = {} and friendId = {}", userId, friendId);
         return filmService.getFriendCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getTopFilmWithFilter(@RequestParam(required = false, defaultValue = "10") Integer count,
+                                           @RequestParam(required = false) Integer genreId,
+                                           @RequestParam(required = false) Integer year) {
+        log.debug("GET request received to get top 10 films");
+        return filmService.getTopFilmWithFilter(count, genreId, year);
     }
 }
