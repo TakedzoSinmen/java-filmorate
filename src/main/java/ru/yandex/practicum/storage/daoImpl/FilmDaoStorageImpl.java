@@ -291,6 +291,35 @@ public class FilmDaoStorageImpl implements FilmStorage {
         throw new EntityNotFoundException("Неверно указаны параметры");
     }
 
+    @Override
+    public List<Film> getFriendCommonFilms(Integer userId, Integer friendId) {
+        isUserExist(userId);
+        isUserExist(friendId);
+        String sql = "SELECT * FROM (SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "f.rate, f.mpa_id, COUNT(lf.user_id) AS likes " +
+                "FROM Film AS f " +
+                "JOIN Like_Film AS lf ON f.film_id = lf.film_id " +
+                "WHERE lf.user_id = ?" +
+                "GROUP BY f.film_id) AS ulf " +
+                "JOIN " +
+                "(SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "f.rate, f.mpa_id, COUNT(lf.user_id) AS likes " +
+                "FROM Film AS f " +
+                "JOIN Like_Film AS lf ON f.film_id = lf.film_id " +
+                "WHERE lf.user_id = ? " +
+                "GROUP BY f.film_id) AS flf ON ulf.film_id = flf.film_id " +
+                "ORDER BY likes DESC";
+        return jdbcTemplate.query(sql, mapToFilm(), userId, friendId);
+    }
+
+    private void isUserExist(Integer userId) {
+        String sql = "SELECT user_id FROM User_Filmorate WHERE user_id = ?";
+        if (!jdbcTemplate.queryForRowSet(sql, userId).next()) {
+            log.warn("User with id = {} was not found", userId);
+            throw new EntityNotFoundException(String.format("User with id = %d was not found", userId));
+        }
+    }
+
     // Проверка на существование фильма в базе по id
     private void isExist(int id) {
         String sql = "select * from Director where director_id = ?";
@@ -323,4 +352,5 @@ public class FilmDaoStorageImpl implements FilmStorage {
                     + film.getDuration());
         }
     }
+
 }

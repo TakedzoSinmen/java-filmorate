@@ -10,7 +10,7 @@ import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -87,5 +87,9 @@ public class FilmService {
             default:
                 throw new EntityNotFoundException("Что то не так с параметрами");
         }
+    }
+
+    public List<Film> getFriendCommonFilms(Integer userId, Integer friendId) {
+        return filmStorage.getFriendCommonFilms(userId, friendId);
     }
 }
