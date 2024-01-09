@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
+import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.enums.EventType;
+import ru.yandex.practicum.model.enums.Operation;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
@@ -20,16 +23,25 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
+    private final EventService eventService;
 
     public FilmService(@Qualifier("filmDaoStorageImpl") FilmStorage filmStorage, LikeStorage likeStorage,
-                       @Qualifier("userDaoStorageImpl") UserStorage userStorage) {
+                       @Qualifier("userDaoStorageImpl") UserStorage userStorage, EventService eventService) {
         this.filmStorage = filmStorage;
         this.likeStorage = likeStorage;
         this.userStorage = userStorage;
+        this.eventService = eventService;
     }
 
     public boolean like(Integer filmId, Integer userId) {
         likeStorage.like(filmId, userId);
+        eventService.addEvent(Event.builder()
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .entityId(filmId)
+                .build()
+        );
         return true;
     }
 
@@ -44,6 +56,13 @@ public class FilmService {
         userStorage.getUserById(userId);
         likeStorage.unLike(filmId, userId);
         log.debug("Удален лайк у фильма с  ID=" + filmId);
+        eventService.addEvent(Event.builder()
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(Operation.REMOVE)
+                .entityId(filmId)
+                .build()
+        );
     }
 
     public List<Film> getFilms() {
