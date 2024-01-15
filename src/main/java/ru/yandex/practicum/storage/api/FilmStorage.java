@@ -25,4 +25,6 @@ public interface FilmStorage {
     List<Film> getFriendCommonFilms(Integer userId, Integer friendId);
 
     List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year);
+
+    void isUserExist(Integer userId);
 }

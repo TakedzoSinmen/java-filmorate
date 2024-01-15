@@ -1,10 +1,12 @@
 package ru.yandex.practicum.controller.api;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.service.EventService;
 import ru.yandex.practicum.service.UserService;
 
 import javax.validation.Valid;
@@ -12,11 +14,12 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
@@ -72,5 +75,11 @@ public class UserController {
         log.debug("DELETE request received to delete User by given id= {}", id);
         userService.deleteUserById(id);
         return ResponseEntity.ok("User with ID " + id + " has been successfully deleted");
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getEventFeed(@PathVariable(value = "id") Integer id) {
+        log.debug("GET request received to receive event feed of user with id = {}", id);
+        return eventService.getEventFeed(id);
     }
 }

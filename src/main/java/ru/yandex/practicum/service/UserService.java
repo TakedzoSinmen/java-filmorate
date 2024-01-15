@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
+import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.model.enums.EventType;
+import ru.yandex.practicum.model.enums.Operation;
 import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.List;
@@ -15,17 +18,36 @@ import java.util.List;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final EventService eventService;
 
-    public UserService(@Qualifier("userDaoStorageImpl") UserStorage userStorage) {
+    public UserService(@Qualifier("userDaoStorageImpl") UserStorage userStorage,
+                       EventService eventService) {
         this.userStorage = userStorage;
+        this.eventService = eventService;
     }
 
     public void addFriend(Integer coreId, Integer friendId) {
         userStorage.addFriend(coreId, friendId);
+        eventService.addEvent(Event.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(coreId)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friendId)
+                .build()
+        );
     }
 
     public void removeFriend(Integer coreId, Integer friendId) {
         userStorage.removeFriend(coreId, friendId);
+        eventService.addEvent(Event.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(coreId)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friendId)
+                .build()
+        );
     }
 
     public List<User> searchForUserFriends(Integer id) {
