@@ -85,6 +85,7 @@ class UserDaoStorageImplTest {
         userDaoStorage.deleteUserById(user.getId());
 
         List<User> users = userDaoStorage.getUsers();
+
         assertEquals(0, users.size());
     }
 
