@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Event;
+import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.EventService;
 import ru.yandex.practicum.service.UserService;
+import ru.yandex.practicum.service.RecommendationService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -20,6 +22,7 @@ public class UserController {
 
     private final UserService userService;
     private final EventService eventService;
+    private final RecommendationService recommendationService;
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
@@ -81,5 +84,11 @@ public class UserController {
     public List<Event> getEventFeed(@PathVariable(value = "id") Integer id) {
         log.debug("GET request received to receive event feed of user with id = {}", id);
         return eventService.getEventFeed(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> recommendations(@PathVariable(value = "id") Integer id) {
+        log.debug("GET request received to receive recommendations to user with id= {}", id);
+        return recommendationService.recommendations(id);
     }
 }
