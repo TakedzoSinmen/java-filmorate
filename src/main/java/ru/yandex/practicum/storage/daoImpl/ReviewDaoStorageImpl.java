@@ -6,7 +6,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.exception.BadRequestException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
@@ -49,8 +48,6 @@ public class ReviewDaoStorageImpl implements ReviewStorage {
     @Override
     public Review addReview(Review review) {
         entityValidation(review);
-        forHandleReviewIdWithPostmanExceptionsFindUser(review.getUserId());
-        forHandleReviewIdWithPostmanExceptionsFindFilm(review.getFilmId());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("review")
                 .usingGeneratedKeyColumns("review_id");
@@ -143,20 +140,6 @@ public class ReviewDaoStorageImpl implements ReviewStorage {
         jdbcTemplate.update(sqlQuery, userId, reviewId);
         String plusQuery = "UPDATE Review SET useful = useful + 1 WHERE review_id=?";
         jdbcTemplate.update(plusQuery, reviewId);
-    }
-
-    private void forHandleReviewIdWithPostmanExceptionsFindUser(Integer id) {
-        SqlRowSet rsUser = jdbcTemplate.queryForRowSet("SELECT user_id FROM User_Filmorate WHERE user_id=?", id);
-        if (!rsUser.next()) {
-            throw new EntityNotFoundException("User not exist");
-        }
-    }
-
-    private void forHandleReviewIdWithPostmanExceptionsFindFilm(Integer id) {
-        SqlRowSet rsFilm = jdbcTemplate.queryForRowSet("SELECT film_id FROM Film WHERE film_id=?", id);
-        if (!rsFilm.next()) {
-            throw new EntityNotFoundException("Film not exist");
-        }
     }
 
     private void entityValidation(Review review) {
