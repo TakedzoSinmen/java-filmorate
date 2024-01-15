@@ -56,7 +56,7 @@ public class ReviewService {
     }
 
     public Review getReviewById(Integer id) {
-        return reviewStorage.getReviewById(id);
+        return reviewStorage.getReviewById(id).getBody();
     }
 
     public List<Review> getReviewsByFilmIdAndCount(Integer filmId, Integer count) {

@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Review;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,7 +71,7 @@ class ReviewDaoStorageImplTest {
                 anyInt()
         )).thenReturn(validReview);
 
-        Review result = reviewDaoStorage.getReviewById(validReview.getReviewId());
+        Review result = reviewDaoStorage.getReviewById(validReview.getReviewId()).getBody();
 
         assertEquals(validReview, result);
         verify(jdbcTemplate).queryForObject(anyString(),
@@ -94,7 +94,7 @@ class ReviewDaoStorageImplTest {
 
     @Test
     void testGetReviewsByFilmIdAndCountWhenFilmIdNullThenReviewsReturned() {
-        List<Review> expectedReviews = Arrays.asList(validReview);
+        List<Review> expectedReviews = Collections.singletonList(validReview);
         when(jdbcTemplate.query(anyString(),
                 (RowMapper<Review>) any(RowMapper.class),
                 anyInt()
@@ -111,7 +111,7 @@ class ReviewDaoStorageImplTest {
 
     @Test
     void testGetReviewsByFilmIdAndCountWhenFilmIdNotNullThenReviewsReturned() {
-        List<Review> expectedReviews = Arrays.asList(validReview);
+        List<Review> expectedReviews = Collections.singletonList(validReview);
         when(jdbcTemplate.query(anyString(),
                 (RowMapper<Review>) any(RowMapper.class),
                 anyInt(),

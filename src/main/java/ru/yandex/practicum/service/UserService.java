@@ -1,7 +1,7 @@
 package ru.yandex.practicum.service;
 
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
@@ -13,18 +13,13 @@ import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.List;
 
-@Service
 @Data
+@Slf4j
+@Service
 public class UserService {
 
     private final UserStorage userStorage;
     private final EventService eventService;
-
-    public UserService(@Qualifier("userDaoStorageImpl") UserStorage userStorage,
-                       EventService eventService) {
-        this.userStorage = userStorage;
-        this.eventService = eventService;
-    }
 
     public void addFriend(Integer coreId, Integer friendId) {
         userStorage.addFriend(coreId, friendId);

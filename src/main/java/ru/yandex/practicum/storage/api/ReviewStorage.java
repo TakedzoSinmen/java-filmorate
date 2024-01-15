@@ -1,5 +1,6 @@
 package ru.yandex.practicum.storage.api;
 
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.model.Review;
 
 import java.util.List;
@@ -11,7 +12,7 @@ public interface ReviewStorage {
 
     void deleteReview(Integer id);
 
-    Review getReviewById(Integer id);
+    ResponseEntity<Review> getReviewById(Integer id);
 
     List<Review> getReviewsByFilmIdAndCount(Integer filmId, Integer count);
 
@@ -22,4 +23,8 @@ public interface ReviewStorage {
     void removeLikeFromReview(Integer id, Integer userId);
 
     void removeDislikeFromReview(Integer id, Integer userId);
+
+    void forHandleReviewIdWithPostmanExceptionsFindFilm(Integer id);
+
+    void forHandleReviewIdWithPostmanExceptionsFindUser(Integer id);
 }

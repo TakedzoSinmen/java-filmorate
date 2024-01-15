@@ -2,7 +2,6 @@ package ru.yandex.practicum.storage.daoImpl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -18,7 +17,6 @@ import java.util.*;
 @Slf4j
 @Repository
 @AllArgsConstructor
-@Qualifier("userDaoStorageImpl")
 public class UserDaoStorageImpl implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -86,13 +84,34 @@ public class UserDaoStorageImpl implements UserStorage {
     }
 
     @Override
-    public void deleteUserById(int id) {
-        String query = "DELETE FROM User_Filmorate WHERE user_id=?";
-        int deleteResult = jdbcTemplate.update(query, id);
-        if (deleteResult > 0) {
-            log.info("User with ID {} has been removed.", id);
-        } else {
-            log.info("User with ID {} has not been deleted.", id);
+    public void deleteUserById(Integer id) {
+        isUserExist(id);
+        try {
+            // Удаление события по id пользователя
+            final String sqlFeedDeleteByUserId = "DELETE FROM Event_Feed WHERE user_id=?";
+            int resultFeedDelete = jdbcTemplate.update(sqlFeedDeleteByUserId, id);
+
+            // Удаление друзей по id пользователя
+            final String sqlFriendDeleteByUserId = "DELETE FROM Friendship WHERE user_id=?";
+            int resultFriendDeleteByUserId = jdbcTemplate.update(sqlFriendDeleteByUserId, id);
+
+            // Удаление друзей по id друга
+            final String sqlFriendDeleteByFriendId = "DELETE FROM Friendship WHERE friend_id=?";
+            int resultFriendDeleteByFriendId = jdbcTemplate.update(sqlFriendDeleteByFriendId, id);
+
+            // Удаление самого пользователя
+            final String sqlDeleteUserById = "DELETE FROM User_Filmorate WHERE user_id=?";
+            int resultUserDelete = jdbcTemplate.update(sqlDeleteUserById, id);
+
+            if (resultFeedDelete > 0 || resultFriendDeleteByUserId > 0 || resultFriendDeleteByFriendId > 0 ||
+                    resultUserDelete > 0) {
+                log.debug("Пользователь и связанные с ним данные успешно удалены");
+            } else {
+                throw new EntityNotFoundException("Пользователь не существует");
+            }
+        } catch (RuntimeException e) {
+            log.debug("Вы отправили неверный идентификатор пользователя для запроса DELETE: {}", id);
+            throw new EntityNotFoundException("Вы отправили неверный идентификатор пользователя для запроса DELETE: " + id);
         }
     }
 
@@ -154,5 +173,13 @@ public class UserDaoStorageImpl implements UserStorage {
                     .orElseThrow(() -> new EntityNotFoundException("Common friend not exist in DB with ID=" + id)));
         }
         return commonFriends;
+    }
+
+    public void isUserExist(Integer userId) {
+        String sql = "SELECT user_id FROM User_Filmorate WHERE user_id = ?";
+        if (!jdbcTemplate.queryForRowSet(sql, userId).next()) {
+            log.warn("User with id = {} was not found", userId);
+            throw new EntityNotFoundException(String.format("User with id = %d was not found", userId));
+        }
     }
 }

@@ -1,22 +1,21 @@
 package ru.yandex.practicum.controller.api;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.EventService;
-import ru.yandex.practicum.service.UserService;
 import ru.yandex.practicum.service.RecommendationService;
+import ru.yandex.practicum.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
 
+@Data
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
@@ -74,10 +73,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUserById(@PathVariable(value = "id") Integer id) {
-        log.debug("DELETE request received to delete User by given id= {}", id);
+    public void deleteUserById(@PathVariable(value = "id") Integer id) {
         userService.deleteUserById(id);
-        return ResponseEntity.ok("User with ID " + id + " has been successfully deleted");
     }
 
     @GetMapping("/{id}/feed")

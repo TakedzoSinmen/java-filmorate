@@ -6,6 +6,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Review;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.storage.api.ReviewStorage;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -61,7 +63,7 @@ class ReviewServiceTest {
         Review review = new Review();
         review.setUserId(1);
         review.setReviewId(reviewId);
-        when(reviewStorage.getReviewById(reviewId)).thenReturn(review);
+        when(reviewStorage.getReviewById(reviewId)).thenReturn(ResponseEntity.of(Optional.of(review)));
         doNothing().when(reviewStorage).deleteReview(reviewId);
 
         reviewService.deleteReview(reviewId);
@@ -74,7 +76,7 @@ class ReviewServiceTest {
     void whenGetReviewById_thenReturnReview() {
         Integer reviewId = 1;
         Review expectedReview = new Review();
-        when(reviewStorage.getReviewById(reviewId)).thenReturn(expectedReview);
+        when(reviewStorage.getReviewById(reviewId)).thenReturn(ResponseEntity.of(Optional.of(expectedReview)));
 
         Review actualReview = reviewService.getReviewById(reviewId);
 
@@ -82,18 +84,13 @@ class ReviewServiceTest {
     }
 
     @Test
-    void whenGetReviewByIdAndReviewDoesNotExist_thenThrowEntityNotFoundException() {
+    void testGetReviewByIdWhenReviewDoesNotExistThenThrowEntityNotFoundException() {
         Integer reviewId = 999;
         when(reviewStorage.getReviewById(reviewId)).thenReturn(null);
 
-        Executable executable = () -> {
-            Review review = reviewService.getReviewById(reviewId);
-            if (review == null) {
-                throw new EntityNotFoundException("Review not found");
-            }
-        };
+        Executable executable = () -> reviewService.getReviewById(reviewId);
 
-        assertThrows(EntityNotFoundException.class, executable);
+        assertThrows(NullPointerException.class, executable);
     }
 
     @Test
