@@ -58,7 +58,7 @@ class MpaStorageImplTest {
 
     @Test
     void testGetAllMpaWhenMpasExistThenReturnMpas() {
-        when(jdbcTemplate.query(eq("SELECT mpa_id, mpa_name FROM Mpa"), any(RowMapper.class)))
+        when(jdbcTemplate.query(eq("SELECT mpa_id, mpa_name FROM Mpa ORDER BY mpa_id"), any(RowMapper.class)))
                 .thenReturn(expectedMpaList);
         List<Mpa> result = mpaStorage.getAllMpa();
         assertNotNull(result, "Список Mpa не должен быть null");
@@ -68,7 +68,7 @@ class MpaStorageImplTest {
 
     @Test
     void testGetAllMpaWhenNoMpasExistThenReturnEmptyList() {
-        when(jdbcTemplate.query(eq("SELECT mpa_id, mpa_name FROM Mpa"), any(RowMapper.class)))
+        when(jdbcTemplate.query(eq("SELECT mpa_id, mpa_name FROM Mpa ORDER BY mpa_id"), any(RowMapper.class)))
                 .thenReturn(Arrays.asList());
         List<Mpa> result = mpaStorage.getAllMpa();
         assertTrue(result.isEmpty(), "Список Mpa должен быть пустым");
