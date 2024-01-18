@@ -36,10 +36,13 @@ import java.util.stream.Collectors;
 public class FilmDaoStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     private final GenreStorage genreStorage;
     private final LikeStorage likeStorage;
     private final MpaStorage mpaStorage;
     private final DirectorService directorService;
+
+
 
     private RowMapper<Film> mapToFilm() {
         return new RowMapper<Film>() {

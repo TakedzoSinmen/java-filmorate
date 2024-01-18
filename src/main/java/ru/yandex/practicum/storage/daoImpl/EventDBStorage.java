@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
+import ru.yandex.practicum.service.FilmService;
 import ru.yandex.practicum.storage.api.EventStorage;
 import ru.yandex.practicum.storage.api.FilmStorage;
 
@@ -18,11 +20,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventDBStorage implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final FilmStorage filmStorage;
 
     @Override
     public List<Event> getEventFeed(Integer id) {
-        filmStorage.isUserExist(id);
+        isUserExist(id);
         String sql = "SELECT ef.event_id, ef.timestamp, ef.user_id, ef.event_type, ef.operation, ef.entity_id " +
                 "FROM Event_Feed AS ef " +
                 "WHERE ef.user_id = ?";
@@ -48,4 +49,13 @@ public class EventDBStorage implements EventStorage {
                         .entityId(rs.getInt("entity_id"))
                         .build();
     }
+
+    private void isUserExist(Integer userId) {
+        String sql = "SELECT user_id FROM User_Filmorate WHERE user_id = ?";
+        if (!jdbcTemplate.queryForRowSet(sql, userId).next()) {
+            log.warn("User with id = {} was not found", userId);
+            throw new EntityNotFoundException(String.format("User with id = %d was not found", userId));
+        }
+    }
+
 }
