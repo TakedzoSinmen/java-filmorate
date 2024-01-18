@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
@@ -117,7 +118,7 @@ class FilmServiceTest {
     @Test
     void testGetFilmsByDirectorIdSortByThenReturnFilms() {
         Integer directorId = 1;
-        String variable = "name";
+        SortBy variable = SortBy.YEAR;
         List<Film> expectedFilms = Arrays.asList(new Film(), new Film());
         when(filmStorage.getFilmsByDirectorIdSortBy(variable, directorId)).thenReturn(expectedFilms);
 

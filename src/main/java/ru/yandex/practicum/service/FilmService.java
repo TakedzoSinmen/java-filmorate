@@ -9,6 +9,7 @@ import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
+import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
@@ -85,7 +86,7 @@ public class FilmService {
         filmStorage.deleteFilmById(id);
     }
 
-    public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, String variable) {
+    public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, SortBy variable) {
         return filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
     }
 

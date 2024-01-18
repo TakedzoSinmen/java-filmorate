@@ -1,6 +1,7 @@
 package ru.yandex.practicum.storage.api;
 
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.enums.SortBy;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public interface FilmStorage {
 
     void deleteFilmById(Integer id);
 
-    List<Film> getFilmsByDirectorIdSortBy(String sortBy, int directorId);
+    List<Film> getFilmsByDirectorIdSortBy(SortBy sortBy, int directorId);
 
     List<Film> searchFilmsByOneParameter(String query, String param);
 

@@ -1,16 +1,17 @@
 package ru.yandex.practicum.controller.api;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.service.DirectorService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/directors")
 public class DirectorController {
 
@@ -29,13 +30,13 @@ public class DirectorController {
     }
 
     @PostMapping
-    public Director create(@RequestBody Director director) {
+    public Director create(@RequestBody @Valid Director director) {
         log.info("POST -> create Director");
         return service.createDirector(director);
     }
 
     @PutMapping
-    public Director update(@RequestBody Director director) {
+    public Director update(@RequestBody @Valid Director director) {
         log.info("PUT -> update Director");
         return service.updateDirector(director);
     }

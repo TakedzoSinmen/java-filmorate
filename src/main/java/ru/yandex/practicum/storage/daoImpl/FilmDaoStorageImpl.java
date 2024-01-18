@@ -14,6 +14,7 @@ import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.Genre;
+import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.service.DirectorService;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.GenreStorage;
@@ -193,12 +194,10 @@ public class FilmDaoStorageImpl implements FilmStorage {
     // году релиза в зависимости от параметра. В случае некоректно указанного параметра ->
     // выбрасываем исключение и сообщение пользователю в теле ответа
     @Override
-    public List<Film> getFilmsByDirectorIdSortBy(String sortBy, int directorId) {
+    public List<Film> getFilmsByDirectorIdSortBy(SortBy sortBy, int directorId) {
         isExist(directorId);
-        String sortByYear = "year";
-        String sortByLikes = "likes";
 
-        if (sortBy.equals(sortByYear)) {
+        if (sortBy.equals(SortBy.YEAR)) {
 
             String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
                     "f.rate, f.mpa_id " +
@@ -211,7 +210,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
             return jdbcTemplate.query(query, mapToFilm(), directorId);
         }
 
-        if (sortBy.equals(sortByLikes)) {
+        if (sortBy.equals(SortBy.LIKES)) {
 
             String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
                     "f.rate, f.mpa_id " +

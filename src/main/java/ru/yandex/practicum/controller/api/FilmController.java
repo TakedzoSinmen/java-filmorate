@@ -1,19 +1,24 @@
 package ru.yandex.practicum.controller.api;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Validated
 public class FilmController {
 
     private final FilmService filmService;
@@ -66,7 +71,7 @@ public class FilmController {
     // В url приходит айдишник желаемого режиссёра и параметр в виде строки = (like / year)
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirectorId(@PathVariable Integer directorId,
-                                           @RequestParam String sortBy) {
+                                           @RequestParam SortBy sortBy) {
 
         return filmService.getFilmsByDirectorIdSortBy(directorId, sortBy);
     }
@@ -89,9 +94,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilmWithFilter(@RequestParam(required = false, defaultValue = "10") Integer count,
+    public List<Film> getTopFilmWithFilter(@RequestParam(defaultValue = "10") @Positive Integer count,
                                            @RequestParam(required = false) Integer genreId,
-                                           @RequestParam(required = false) Integer year) {
+                                           @RequestParam(required = false) @Min(1895) Integer year) {
         log.debug("GET the received request to receive the top 10 films with a genre and year filter");
         return filmService.getTopFilmWithFilter(count, genreId, year);
     }
