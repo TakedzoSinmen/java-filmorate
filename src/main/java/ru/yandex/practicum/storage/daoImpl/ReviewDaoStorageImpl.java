@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.exception.BadRequestException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Review;
 import ru.yandex.practicum.storage.api.ReviewStorage;
@@ -49,7 +48,6 @@ public class ReviewDaoStorageImpl implements ReviewStorage {
 
     @Override
     public Review addReview(Review review) {
-        entityValidation(review);
         forHandleReviewIdWithPostmanExceptionsFindUser(review.getUserId());
         forHandleReviewIdWithPostmanExceptionsFindFilm(review.getFilmId());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
@@ -162,27 +160,6 @@ public class ReviewDaoStorageImpl implements ReviewStorage {
     public void forHandleReviewIdWithPostmanExceptionsFindFilm(Integer id) {
         SqlRowSet rsFilm = jdbcTemplate.queryForRowSet("SELECT film_id FROM Film WHERE film_id=?", id);
         if (!rsFilm.next()) {
-            throw new EntityNotFoundException("Film not exist");
-        }
-    }
-
-    private void entityValidation(Review review) {
-        if (review.getContent() == null) {
-            throw new BadRequestException("Content must be not null");
-        }
-        if (review.getIsPositive() == null) {
-            throw new BadRequestException("IsPositive field must be not null");
-        }
-        if (review.getUserId() == null) {
-            throw new BadRequestException("User id must be not null");
-        }
-        if (review.getUserId() < 0) {
-            throw new EntityNotFoundException("User not exist");
-        }
-        if (review.getFilmId() == null) {
-            throw new BadRequestException("Film id must be not null");
-        }
-        if (review.getFilmId() < 0) {
             throw new EntityNotFoundException("Film not exist");
         }
     }

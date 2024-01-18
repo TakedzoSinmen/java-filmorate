@@ -37,13 +37,10 @@ import java.util.stream.Collectors;
 public class FilmDaoStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
     private final GenreStorage genreStorage;
     private final LikeStorage likeStorage;
     private final MpaStorage mpaStorage;
     private final DirectorService directorService;
-
-
 
     private RowMapper<Film> mapToFilm() {
         return new RowMapper<Film>() {
@@ -70,7 +67,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
         values.put("description", film.getDescription());
         values.put("release_date", film.getReleaseDate());
         values.put("duration", film.getDuration());
-        values.put("rate", film.getRate());
         values.put("mpa_id", film.getMpa().getId());
         return values;
     }
@@ -101,7 +97,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
         return film;
     }
 
-    private List<Director> getDirectorsByFilmId(Integer filmId) {
+    public List<Director> getDirectorsByFilmId(Integer filmId) {
         String sql = "SELECT director_id FROM Director_Film WHERE film_id = ?";
         List<Integer> ids = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("director_id"), filmId);
 
@@ -376,5 +372,4 @@ public class FilmDaoStorageImpl implements FilmStorage {
                     + film.getDuration());
         }
     }
-
 }

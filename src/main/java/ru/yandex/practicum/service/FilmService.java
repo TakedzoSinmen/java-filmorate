@@ -1,8 +1,7 @@
 package ru.yandex.practicum.service;
 
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
@@ -16,23 +15,15 @@ import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.List;
 
-@Service
 @Slf4j
-@Data
+@Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
     private final EventService eventService;
-
-    public FilmService(@Qualifier("filmDaoStorageImpl") FilmStorage filmStorage, LikeStorage likeStorage,
-                       @Qualifier("userDaoStorageImpl") UserStorage userStorage, EventService eventService) {
-        this.filmStorage = filmStorage;
-        this.likeStorage = likeStorage;
-        this.userStorage = userStorage;
-        this.eventService = eventService;
-    }
 
     public boolean like(Integer filmId, Integer userId) {
         likeStorage.like(filmId, userId);

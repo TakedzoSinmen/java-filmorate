@@ -52,7 +52,7 @@ public class EventDBStorage implements EventStorage {
     private void isUserExist(Integer userId) {
         String sql = "SELECT user_id FROM User_Filmorate WHERE user_id = ?";
         if (!jdbcTemplate.queryForRowSet(sql, userId).next()) {
-            log.warn("User with id = {} was not found", userId);
+            log.debug("User with id = {} was not found", userId);
             throw new EntityNotFoundException(String.format("User with id = %d was not found", userId));
         }
     }

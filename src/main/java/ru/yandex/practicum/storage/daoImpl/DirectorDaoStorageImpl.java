@@ -53,7 +53,7 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
                 .usingGeneratedKeyColumns("director_id");
         director.setId(insert.executeAndReturnKey(directorToMap(director)).intValue());
 
-        log.info("Director with id: {} was added", director.getId());
+        log.debug("Director with id: {} was added", director.getId());
         return director;
     }
 
@@ -63,7 +63,7 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
         String sql = "UPDATE Director SET director_name = ? WHERE director_id =?";
         jdbcTemplate.update(sql, director.getName(), director.getId());
 
-        log.info("Director with id: {} was updated", director.getId());
+        log.debug("Director with id: {} was updated", director.getId());
         return director;
     }
 
@@ -73,7 +73,7 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
         String sql = "DELETE FROM Director WHERE director_id =?";
         jdbcTemplate.update(sql, id);
 
-        log.info("Director with id: {} was deleted", id);
+        log.debug("Director with id: {} was deleted", id);
     }
 
     private static Director rowToDirector(SqlRowSet rowSet) {
@@ -90,7 +90,7 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
     private void isExist(int id) {
         String sql = "SELECT * FROM Director WHERE director_id = ?";
         if (!jdbcTemplate.queryForRowSet(sql, id).next()) {
-            log.error("Director with id: {} was not found", id);
+            log.debug("Director with id: {} was not found", id);
             throw new EntityNotFoundException(String.format("Director with id: %d was not found", id));
         }
     }
@@ -98,7 +98,7 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
     // Небольшая валидация режиссёра
     static void isValid(Director director) {
         if (director.getName().isBlank()) {
-            log.error("Field 'name' cannot be empty");
+            log.debug("Field 'name' cannot be empty");
             throw new BadRequestException("Field 'name' cannot be empty");
         }
     }

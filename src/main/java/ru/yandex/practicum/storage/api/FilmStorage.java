@@ -1,5 +1,6 @@
 package ru.yandex.practicum.storage.api;
 
+import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.enums.SortBy;
 
@@ -28,4 +29,6 @@ public interface FilmStorage {
     List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year);
 
     void isUserExist(Integer userId);
+
+    List<Director> getDirectorsByFilmId(Integer filmId);
 }

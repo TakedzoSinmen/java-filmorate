@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
-import ru.yandex.practicum.storage.api.FilmStorage;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
@@ -17,8 +16,6 @@ import static org.mockito.Mockito.*;
 class EventDBStorageTest {
     @Mock
     private JdbcTemplate jdbcTemplate;
-    @Mock
-    private FilmStorage filmStorage;
     @InjectMocks
     private EventDBStorage eventDBStorage;
 
@@ -27,38 +24,6 @@ class EventDBStorageTest {
         MockitoAnnotations.openMocks(this);
         reset(jdbcTemplate);
     }
-
-//    @Test
-//    void testGetEventFeedWhenUserExistsThenReturnListOfEvents() {
-//        Integer userId = 1;
-//        List<Event> expectedEvents = Arrays.asList(
-//                new Event(1, 123456789L, userId, EventType.LIKE, Operation.ADD, 10),
-//                new Event(2, 123456790L, userId, EventType.REVIEW, Operation.UPDATE, 20)
-//        );
-//
-//        doNothing().when(filmStorage).isUserExist(userId);
-//        when(jdbcTemplate.query(
-//                anyString(),
-//                any(RowMapper.class),
-//                eq(userId)
-//        )).thenReturn(expectedEvents);
-//
-//        List<Event> actualEvents = eventDBStorage.getEventFeed(userId);
-//
-//        verify(filmStorage).isUserExist(userId);
-//        verify(jdbcTemplate).query(anyString(), any(RowMapper.class), eq(userId));
-//        assertEquals(expectedEvents, actualEvents, "Список событий не соответствует ожидаемому.");
-//    }
-
-//    @Test
-//    void testGetEventFeedWhenUserDoesNotExistThenThrowException() {
-//        Integer userId = 2;
-//        doThrow(new EntityNotFoundException("Пользователь не существует")).when(filmStorage).isUserExist(userId);
-//
-//        Executable executable = () -> eventDBStorage.getEventFeed(userId);
-//
-//        assertThrows(EntityNotFoundException.class, executable, "Должно быть выброшено исключение, если пользователь не существует.");
-//    }
 
     @Test
     void testAddEventWhenEventAddedSuccessfullyThenNoException() {

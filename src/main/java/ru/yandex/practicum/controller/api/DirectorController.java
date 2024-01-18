@@ -46,5 +46,4 @@ public class DirectorController {
         log.info("DELETE -> delete Director with id: {}", id);
         service.deleteDirectorById(id);
     }
-
 }
