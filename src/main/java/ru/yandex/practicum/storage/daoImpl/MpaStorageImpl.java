@@ -35,7 +35,7 @@ public class MpaStorageImpl implements MpaStorage {
 
     @Override
     public List<Mpa> getAllMpa() {
-        String query = "SELECT mpa_id, mpa_name FROM Mpa";
+        String query = "SELECT mpa_id, mpa_name FROM Mpa ORDER BY mpa_id";
         return jdbcTemplate.query(query, mpaRowMapper());
     }
 }

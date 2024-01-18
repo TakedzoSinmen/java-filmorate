@@ -38,7 +38,7 @@ public class GenreStorageImpl implements GenreStorage {
 
     @Override
     public List<Genre> getAll() {
-        String query = "SELECT genre_id, genre_name FROM Genre";
+        String query = "SELECT genre_id, genre_name FROM Genre ORDER BY genre_id";
         return jdbcTemplate.query(query, genreRowMapper());
     }
 
