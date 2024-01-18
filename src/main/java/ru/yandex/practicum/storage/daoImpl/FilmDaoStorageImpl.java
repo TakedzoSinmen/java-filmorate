@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.exception.BadRequestException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
@@ -23,7 +22,6 @@ import ru.yandex.practicum.storage.api.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,23 +68,28 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        entityValidation(film);
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("film")
                 .usingGeneratedKeyColumns("film_id");
         Number key = simpleJdbcInsert.executeAndReturnKey(filmToMap(film));
         film.setId((Integer) key);
+
         if (!film.getGenres().isEmpty()) {
-            String query = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?,?)";
+            String genreQuery = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?,?)";
+            List<Object[]> genreParams = new ArrayList<>();
             for (Genre genre : film.getGenres()) {
-                jdbcTemplate.update(query, film.getId(), genre.getId());
+                genreParams.add(new Object[]{film.getId(), genre.getId()});
             }
+            jdbcTemplate.batchUpdate(genreQuery, genreParams);
         }
+
         if (!film.getDirectors().isEmpty()) {
-            String query = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
+            String directorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
+            List<Object[]> directorParams = new ArrayList<>();
             for (Director director : film.getDirectors()) {
-                jdbcTemplate.update(query, film.getId(), director.getId());
+                directorParams.add(new Object[]{film.getId(), director.getId()});
             }
+            jdbcTemplate.batchUpdate(directorQuery, directorParams);
         }
 
         log.debug("Film with ID {} saved.", film.getId());
@@ -96,13 +99,11 @@ public class FilmDaoStorageImpl implements FilmStorage {
     public Set<Director> getDirectorsByFilmId(Integer filmId) {
         String sql = "SELECT director_id FROM Director_Film WHERE film_id = ?";
         List<Integer> ids = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("director_id"), filmId);
-
         return ids.stream().map(directorService::getDirectorById).collect(Collectors.toSet());
     }
 
     @Override
     public Film updateFilm(Film film) {
-        entityValidation(film);
         int filmId = film.getId();
         String query = "UPDATE Film SET film_name=?, description=?, release_date=?, duration=?, rate =?, mpa_id=? " +
                 "WHERE film_id=?";
@@ -135,7 +136,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
             jdbcTemplate.update(querySql, filmId);
         }
 
-        // Обновление режиссёров фильма (не стал менять логику как выше, для прощей читаемости)
         if (!film.getDirectors().isEmpty()) {
             String querySql = "DELETE FROM Director_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
@@ -179,9 +179,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
     }
 
-    // Проверка параметра sortBy и уже сама логика сортировки по лайкам или
-    // году релиза в зависимости от параметра. В случае некоректно указанного параметра ->
-    // выбрасываем исключение и сообщение пользователю в теле ответа
     @Override
     public List<Film> getFilmsByDirectorIdSortBy(SortBy sortBy, int directorId) {
         isExist(directorId);
@@ -339,30 +336,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
         if (!jdbcTemplate.queryForRowSet(sql, id).next()) {
             log.warn("Director with id: {} was not found", id);
             throw new EntityNotFoundException(String.format("Director with id: %d was not found", id));
-        }
-    }
-
-    private void entityValidation(Film film) {
-        if (film.getName().isBlank() || film.getName().isEmpty()) {
-            log.debug("Ошибка при валидации фильма, не заполнено поле name= {}", film.getName());
-            throw new BadRequestException("Ошибка при валидации фильма, не заполнено поле name= " + film.getName());
-        }
-        if (film.getDescription().length() > 200) {
-            log.debug("Ошибка при валидации фильма, длина поля description >200, а именно= {}",
-                    film.getDescription().length());
-            throw new BadRequestException("Ошибка при валидации фильма, длина поля description >200, а именно= "
-                    + film.getDescription().length());
-        }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.debug("Ошибка при валидации фильма, дата релиза раньше 28.12.1895, а именно= {}",
-                    film.getReleaseDate());
-            throw new BadRequestException("Ошибка при валидации фильма, дата релиза раньше 28.12.1895, а именно= "
-                    + film.getReleaseDate());
-        }
-        if (film.getDuration() < 0) {
-            log.debug("Ошибка при валидации фильма, отрицательная продолжительность= {}", film.getDuration());
-            throw new BadRequestException("Ошибка при валидации фильма, отрицательная продолжительность= "
-                    + film.getDuration());
         }
     }
 }
