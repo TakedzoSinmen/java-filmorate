@@ -82,7 +82,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 jdbcTemplate.update(query, film.getId(), genre.getId());
             }
         }
-        // добавление режиссеров в базу (по аналогии с жанрами выше, т.к. логика аналогична)
         if (!film.getDirectors().isEmpty()) {
             String query = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
             for (Director director : film.getDirectors()) {
