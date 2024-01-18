@@ -9,9 +9,7 @@ import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
-import ru.yandex.practicum.service.FilmService;
 import ru.yandex.practicum.storage.api.EventStorage;
-import ru.yandex.practicum.storage.api.FilmStorage;
 
 import java.util.List;
 
@@ -19,6 +17,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class EventDBStorage implements EventStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -57,5 +56,4 @@ public class EventDBStorage implements EventStorage {
             throw new EntityNotFoundException(String.format("User with id = %d was not found", userId));
         }
     }
-
 }
