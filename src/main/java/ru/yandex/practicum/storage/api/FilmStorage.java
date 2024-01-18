@@ -5,6 +5,7 @@ import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.enums.SortBy;
 
 import java.util.List;
+import java.util.Set;
 
 public interface FilmStorage {
 
@@ -30,5 +31,5 @@ public interface FilmStorage {
 
     void isUserExist(Integer userId);
 
-    List<Director> getDirectorsByFilmId(Integer filmId);
+    Set<Director> getDirectorsByFilmId(Integer filmId);
 }

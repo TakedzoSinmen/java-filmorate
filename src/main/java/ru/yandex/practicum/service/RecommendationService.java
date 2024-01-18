@@ -63,7 +63,7 @@ public class RecommendationService {
                                 (resultSet, rowNumber) -> resultSet.getInt("director_id"), film.getId())
                                 .stream()
                                 .map(directorService::getDirectorById)
-                                .collect(Collectors.toList()));
+                                .collect(Collectors.toSet()));
                 return film;
             }
         };

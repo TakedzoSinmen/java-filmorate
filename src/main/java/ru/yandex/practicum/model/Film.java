@@ -9,7 +9,9 @@ import ru.yandex.practicum.model.validation.ValidReleaseDate;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -26,5 +28,5 @@ public class Film {
     private Integer rate;
     private List<Genre> genres = new ArrayList<>();
     private Mpa mpa;
-    private List<Director> directors = new ArrayList<>();
+    private Set<Director> directors = new HashSet<>();
 }

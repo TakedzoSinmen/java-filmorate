@@ -24,10 +24,7 @@ import ru.yandex.practicum.storage.api.MpaStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -97,11 +94,11 @@ public class FilmDaoStorageImpl implements FilmStorage {
         return film;
     }
 
-    public List<Director> getDirectorsByFilmId(Integer filmId) {
+    public Set<Director> getDirectorsByFilmId(Integer filmId) {
         String sql = "SELECT director_id FROM Director_Film WHERE film_id = ?";
         List<Integer> ids = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("director_id"), filmId);
 
-        return ids.stream().map(directorService::getDirectorById).collect(Collectors.toList());
+        return ids.stream().map(directorService::getDirectorById).collect(Collectors.toSet());
     }
 
     @Override
@@ -144,10 +141,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
             String querySql = "DELETE FROM Director_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
             String insertDirectorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?, ?)";
-            film.setDirectors(film.getDirectors()
-                    .stream()
-                    .distinct()
-                    .collect(Collectors.toList()));
+            film.setDirectors(new HashSet<>(film.getDirectors()));
             for (Director director : film.getDirectors()) {
                 jdbcTemplate.update(insertDirectorQuery, filmId, director.getId());
             }
