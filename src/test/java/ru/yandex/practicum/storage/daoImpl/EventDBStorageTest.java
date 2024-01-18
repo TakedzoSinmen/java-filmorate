@@ -2,22 +2,16 @@ package ru.yandex.practicum.storage.daoImpl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
 import ru.yandex.practicum.storage.api.FilmStorage;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 class EventDBStorageTest {
