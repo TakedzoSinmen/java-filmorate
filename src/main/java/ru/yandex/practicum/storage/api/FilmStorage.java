@@ -1,6 +1,7 @@
 package ru.yandex.practicum.storage.api;
 
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.SortBy;
 
 import java.util.List;
@@ -19,9 +20,9 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirectorIdSortBy(SortBy sortBy, int directorId);
 
-    List<Film> searchFilmsByOneParameter(String query, String param);
+    List<Film> searchFilmsByOneParameter(String query, FindBy param);
 
-    List<Film> searchFilmsByBothParameters(String query, List<String> params);
+    List<Film> searchFilmsByBothParameters(String query, List<FindBy> params);
 
     List<Film> getFriendCommonFilms(Integer userId, Integer friendId);
 

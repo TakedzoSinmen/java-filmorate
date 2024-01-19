@@ -7,6 +7,7 @@ import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.enums.EventType;
+import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.Operation;
 import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.storage.api.FilmStorage;
@@ -82,7 +83,7 @@ public class FilmService {
     }
 
     // проверяем количество параметров в листе и уходим в соответсвующий метод
-    public List<Film> searchFilmsByParams(String query, List<String> params) {
+    public List<Film> searchFilmsByParams(String query, List<FindBy> params) {
 
         switch (params.size()) {
             case 1:

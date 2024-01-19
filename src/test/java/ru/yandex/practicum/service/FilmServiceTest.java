@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
@@ -131,7 +132,7 @@ class FilmServiceTest {
     @Test
     void testSearchFilmsByParamsWhenOneParamThenReturnFilms() {
         String query = "query";
-        List<String> params = Arrays.asList("param1");
+        List<FindBy> params = List.of(FindBy.TITLE);
         List<Film> expectedFilms = Arrays.asList(new Film(), new Film());
         when(filmStorage.searchFilmsByOneParameter(query, params.get(0))).thenReturn(expectedFilms);
 
@@ -144,7 +145,7 @@ class FilmServiceTest {
     @Test
     void testSearchFilmsByParamsWhenTwoParamsThenReturnFilms() {
         String query = "query";
-        List<String> params = Arrays.asList("param1", "param2");
+        List<FindBy> params = List.of(FindBy.TITLE, FindBy.DIRECTOR);
         List<Film> expectedFilms = Arrays.asList(new Film(), new Film());
         when(filmStorage.searchFilmsByBothParameters(query, params)).thenReturn(expectedFilms);
 

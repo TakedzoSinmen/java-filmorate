@@ -15,6 +15,7 @@ import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.Genre;
 import ru.yandex.practicum.model.Mpa;
+import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.storage.api.FilmStorage;
 
@@ -165,9 +166,9 @@ public class FilmDaoStorageImpl implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilmsByOneParameter(String query, String param) {
+    public List<Film> searchFilmsByOneParameter(String query, FindBy param) {
         switch (param) {
-            case "title":
+            case TITLE:
                 String sqlByTitle = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
                         "FROM film f " +
                         "LEFT JOIN LIKE_FILM lf ON f.film_id = lf.film_id " +
@@ -176,7 +177,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
                         "ORDER BY COUNT(lf.like_id) DESC";
 
                 return jdbcTemplate.query(sqlByTitle, mapToFilm());
-            case "director":
+            case DIRECTOR:
                 String sqlByDirector = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
                         "FROM FILM f " +
                         "JOIN director_film df ON f.film_id = df.film_id " +
@@ -193,10 +194,9 @@ public class FilmDaoStorageImpl implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilmsByBothParameters(String query, List<String> params) {
-        String titleAndDirector = params.get(0) + "," + params.get(1);
-        if (titleAndDirector.equals("title,director")
-                || titleAndDirector.equals("director,title")) {
+    public List<Film> searchFilmsByBothParameters(String query, List<FindBy> params) {
+        if (FindBy.TITLE.equals(params.get(0)) && FindBy.DIRECTOR.equals(params.get(1)) ||
+                FindBy.TITLE.equals(params.get(1)) && FindBy.DIRECTOR.equals(params.get(0))) {
             String sqlByBothParams = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
                     "FROM FILM f " +
                     "LEFT JOIN director_film df ON f.film_id = df.film_id " +
@@ -304,7 +304,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
         };
     }
 
-   private List<Integer> insertLikes(Integer filmId) {
+    private List<Integer> insertLikes(Integer filmId) {
         String query = "SELECT user_id FROM Like_Film WHERE film_id=?";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(query, filmId);
         List<Integer> likedUsers = new ArrayList<>();

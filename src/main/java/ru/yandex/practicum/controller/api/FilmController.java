@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.service.FilmService;
 
@@ -78,7 +79,7 @@ public class FilmController {
 
     @GetMapping("/search")
     public List<Film> getSearchFilmsByParams(@RequestParam String query,
-                                             @RequestParam List<String> by) {
+                                             @RequestParam List<FindBy> by) {
 
         return filmService.searchFilmsByParams(query, by);
     }
