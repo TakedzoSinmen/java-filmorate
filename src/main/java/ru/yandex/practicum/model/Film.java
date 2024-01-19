@@ -34,4 +34,8 @@ public class Film {
     private List<Genre> genres = new ArrayList<>();
     private Mpa mpa;
     private Set<Director> directors = new HashSet<>();
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
 }

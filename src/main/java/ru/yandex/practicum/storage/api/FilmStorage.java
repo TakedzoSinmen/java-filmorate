@@ -1,11 +1,9 @@
 package ru.yandex.practicum.storage.api;
 
-import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.enums.SortBy;
 
 import java.util.List;
-import java.util.Set;
 
 public interface FilmStorage {
 
