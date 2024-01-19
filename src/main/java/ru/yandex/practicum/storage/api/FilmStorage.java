@@ -30,6 +30,4 @@ public interface FilmStorage {
     List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year);
 
     void isUserExist(Integer userId);
-
-    Set<Director> getDirectorsByFilmId(Integer filmId);
 }

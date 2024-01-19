@@ -8,17 +8,15 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.Genre;
+import ru.yandex.practicum.model.Mpa;
 import ru.yandex.practicum.model.enums.SortBy;
-import ru.yandex.practicum.service.DirectorService;
 import ru.yandex.practicum.storage.api.FilmStorage;
-import ru.yandex.practicum.storage.api.GenreStorage;
-import ru.yandex.practicum.storage.api.LikeStorage;
-import ru.yandex.practicum.storage.api.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,39 +30,6 @@ import java.util.stream.Collectors;
 public class FilmDaoStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final GenreStorage genreStorage;
-    private final LikeStorage likeStorage;
-    private final MpaStorage mpaStorage;
-    private final DirectorService directorService;
-
-    private RowMapper<Film> mapToFilm() {
-        return new RowMapper<Film>() {
-            @Override
-            public Film mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
-                Film film = new Film();
-                film.setId(rs.getInt("film_id"));
-                film.setName(rs.getString("film_name"));
-                film.setDescription(rs.getString("description"));
-                film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-                film.setDuration(rs.getInt("duration"));
-                film.setRate(likeStorage.getLikesByFilmId(rs.getInt("film_id")).size());
-                film.setMpa(mpaStorage.getMpaById(rs.getInt("mpa_id")).get());
-                film.setGenres(genreStorage.getGenresByFilmId(film.getId()));
-                film.setDirectors(getDirectorsByFilmId(film.getId()));
-                return film;
-            }
-        };
-    }
-
-    private Map<String, Object> filmToMap(Film film) {
-        Map<String, Object> values = new HashMap<>();
-        values.put("film_name", film.getName());
-        values.put("description", film.getDescription());
-        values.put("release_date", film.getReleaseDate());
-        values.put("duration", film.getDuration());
-        values.put("mpa_id", film.getMpa().getId());
-        return values;
-    }
 
     @Override
     public Film addFilm(Film film) {
@@ -73,7 +38,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 .usingGeneratedKeyColumns("film_id");
         Number key = simpleJdbcInsert.executeAndReturnKey(filmToMap(film));
         film.setId((Integer) key);
-
         if (!film.getGenres().isEmpty()) {
             String genreQuery = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?,?)";
             List<Object[]> genreParams = new ArrayList<>();
@@ -82,7 +46,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
             }
             jdbcTemplate.batchUpdate(genreQuery, genreParams);
         }
-
         if (!film.getDirectors().isEmpty()) {
             String directorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
             List<Object[]> directorParams = new ArrayList<>();
@@ -91,15 +54,8 @@ public class FilmDaoStorageImpl implements FilmStorage {
             }
             jdbcTemplate.batchUpdate(directorQuery, directorParams);
         }
-
         log.debug("Film with ID {} saved.", film.getId());
         return film;
-    }
-
-    public Set<Director> getDirectorsByFilmId(Integer filmId) {
-        String sql = "SELECT director_id FROM Director_Film WHERE film_id = ?";
-        List<Integer> ids = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("director_id"), filmId);
-        return ids.stream().map(directorService::getDirectorById).collect(Collectors.toSet());
     }
 
     @Override
@@ -135,7 +91,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
             String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
         }
-
         if (!film.getDirectors().isEmpty()) {
             String querySql = "DELETE FROM Director_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
@@ -181,10 +136,8 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
     @Override
     public List<Film> getFilmsByDirectorIdSortBy(SortBy sortBy, int directorId) {
-        isExist(directorId);
-
+        isDirectorExist(directorId);
         if (sortBy.equals(SortBy.YEAR)) {
-
             String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
                     "f.rate, f.mpa_id " +
                     "FROM FILM f " +
@@ -195,9 +148,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
             return jdbcTemplate.query(query, mapToFilm(), directorId);
         }
-
         if (sortBy.equals(SortBy.LIKES)) {
-
             String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
                     "f.rate, f.mpa_id " +
                     "FROM FILM f " +
@@ -209,14 +160,13 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
             return jdbcTemplate.query(query, mapToFilm(), directorId);
         }
-
         log.error("Incorrect parameter: {}", sortBy);
         throw new EntityNotFoundException(String.format("Incorrect parameter: %s", sortBy));
     }
 
+    @Override
     public List<Film> searchFilmsByOneParameter(String query, String param) {
         switch (param) {
-
             case "title":
                 String sqlByTitle = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
                         "FROM film f " +
@@ -226,7 +176,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
                         "ORDER BY COUNT(lf.like_id) DESC";
 
                 return jdbcTemplate.query(sqlByTitle, mapToFilm());
-
             case "director":
                 String sqlByDirector = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
                         "FROM FILM f " +
@@ -236,18 +185,16 @@ public class FilmDaoStorageImpl implements FilmStorage {
                         "WHERE REPLACE(LOWER(d.director_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
                         "GROUP BY f.film_id " +
                         "ORDER BY COUNT(lf.like_id) DESC";
-
                 return jdbcTemplate.query(sqlByDirector, mapToFilm());
-
             default:
                 log.error("Неверно указан параметр {} ", param);
                 throw new EntityNotFoundException(String.format("Неверно указан параметр %s ", param));
         }
     }
 
+    @Override
     public List<Film> searchFilmsByBothParameters(String query, List<String> params) {
         String titleAndDirector = params.get(0) + "," + params.get(1);
-
         if (titleAndDirector.equals("title,director")
                 || titleAndDirector.equals("director,title")) {
             String sqlByBothParams = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
@@ -302,7 +249,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 " f.release_date, f.duration, f.mpa_id " +
                 "FROM Film AS f " +
                 "LEFT JOIN Like_Film AS lf ON f.film_id = lf.film_id ");
-
         if (genreId == null && year == null) {
             String sqlString = query.append(queryEnd).toString();
             topFilm = jdbcTemplate.query(sqlString, mapToFilm(), count);
@@ -322,6 +268,7 @@ public class FilmDaoStorageImpl implements FilmStorage {
         return topFilm;
     }
 
+    @Override
     public void isUserExist(Integer userId) {
         String sql = "SELECT user_id FROM User_Filmorate WHERE user_id = ?";
         if (!jdbcTemplate.queryForRowSet(sql, userId).next()) {
@@ -330,12 +277,91 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
     }
 
-    // Проверка на существование фильма в базе по id
-    private void isExist(int id) {
+    private void isDirectorExist(int id) {
         String sql = "select * from Director where director_id = ?";
         if (!jdbcTemplate.queryForRowSet(sql, id).next()) {
             log.warn("Director with id: {} was not found", id);
             throw new EntityNotFoundException(String.format("Director with id: %d was not found", id));
         }
+    }
+
+    private RowMapper<Film> mapToFilm() {
+        return new RowMapper<Film>() {
+            @Override
+            public Film mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
+                Film film = new Film();
+                film.setId(rs.getInt("film_id"));
+                film.setName(rs.getString("film_name"));
+                film.setDescription(rs.getString("description"));
+                film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                film.setDuration(rs.getInt("duration"));
+                film.setRate(insertLikes(rs.getInt("film_id")).size());
+                film.setMpa(insertMpa(rs.getInt("mpa_id")).get());
+                film.setGenres(insertGenres(film.getId()));
+                film.setDirectors(insertDirectors(film.getId()));
+                return film;
+            }
+        };
+    }
+
+   private List<Integer> insertLikes(Integer filmId) {
+        String query = "SELECT user_id FROM Like_Film WHERE film_id=?";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(query, filmId);
+        List<Integer> likedUsers = new ArrayList<>();
+        while (sqlRowSet.next()) {
+            likedUsers.add(sqlRowSet.getInt("user_id"));
+        }
+        return likedUsers;
+    }
+
+    private Optional<Mpa> insertMpa(int id) {
+        String query = "SELECT mpa_id, mpa_name FROM Mpa WHERE mpa_id=?";
+        try {
+            Mpa mpa = jdbcTemplate.queryForObject(query,
+                    (rs, rowNum) -> new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")), id);
+            return Optional.ofNullable(mpa);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    private List<Genre> insertGenres(int filmId) {
+        String query = "SELECT g.genre_id, g.genre_name " +
+                "FROM Genre g " +
+                "JOIN Genre_Film gf ON g.genre_id = gf.genre_id " +
+                "WHERE gf.film_id = ?";
+        return jdbcTemplate.query(query, (rs, rowNum) -> new Genre(
+                rs.getInt("genre_id"),
+                rs.getString("genre_name")
+        ), filmId);
+    }
+
+    private Set<Director> insertDirectors(Integer filmId) {
+        String sql = "SELECT d.director_id, d.director_name " +
+                "FROM Director_Film df " +
+                "JOIN Director d ON df.director_id = d.director_id " +
+                "WHERE df.film_id = ?";
+        List<Director> directors = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            int directorId = rs.getInt("director_id");
+            String directorName = rs.getString("director_name");
+            if (directorId == 0) {
+                throw new EntityNotFoundException("Director not found for id: " + directorId);
+            }
+            return Director.builder()
+                    .id(directorId)
+                    .name(directorName)
+                    .build();
+        }, filmId);
+        return new HashSet<>(directors);
+    }
+
+    private Map<String, Object> filmToMap(Film film) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("film_name", film.getName());
+        values.put("description", film.getDescription());
+        values.put("release_date", film.getReleaseDate());
+        values.put("duration", film.getDuration());
+        values.put("mpa_id", film.getMpa().getId());
+        return values;
     }
 }
