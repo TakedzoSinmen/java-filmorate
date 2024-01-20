@@ -26,30 +26,20 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public CustomResponseError handleBadRequest(final BadRequestException exception) {
-        log.debug("Получен статус {} : {}", HttpStatus.BAD_REQUEST, exception.getMessage());
-        return new CustomResponseError("некорректный запрос", exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public CustomResponseError handleBadRequest(final ConstraintViolationException exception) {
-        log.debug("Получен статус {} : {}", HttpStatus.BAD_REQUEST, exception.getMessage());
-        return new CustomResponseError("некорректный аргумент запроса", exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public CustomResponseError handleBadRequest(final ConversionFailedException exception) {
-        log.debug("Получен статус {} : {}", HttpStatus.BAD_REQUEST, exception.getMessage());
-        return new CustomResponseError("некорректный аргумент запроса", exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CustomResponseError handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
         log.debug("Получен статус {} : {}", HttpStatus.BAD_REQUEST, exception.getMessage());
-        return new CustomResponseError("неконсистентные данные",
+        return new CustomResponseError("Неконсистентные данные",
                 Objects.requireNonNull(exception.getFieldError()).getDefaultMessage());
+    }
+
+    @ExceptionHandler({
+            BadRequestException.class,
+            ConstraintViolationException.class,
+            ConversionFailedException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CustomResponseError badReqHandler(final RuntimeException exception) {
+        log.debug("Получен статус {} : {}", HttpStatus.BAD_REQUEST, exception.getMessage());
+        return new CustomResponseError("Некорректные данные", exception.getMessage());
     }
 }
