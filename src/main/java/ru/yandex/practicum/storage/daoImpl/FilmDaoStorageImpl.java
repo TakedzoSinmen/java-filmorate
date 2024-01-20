@@ -1,14 +1,11 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Director;
@@ -19,15 +16,13 @@ import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.SortBy;
 import ru.yandex.practicum.storage.api.FilmStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
-@AllArgsConstructor
-@Qualifier("filmDaoStorageImpl")
+@RequiredArgsConstructor
 public class FilmDaoStorageImpl implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -69,15 +64,21 @@ public class FilmDaoStorageImpl implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        String sqlQuery = "SELECT film_id, film_name, description, release_date, duration, rate, mpa_id FROM Film";
+        String sqlQuery = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.rate," +
+                "mpa.mpa_id, mpa.mpa_name " +
+                "FROM Film as f " +
+                "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id ";
         return jdbcTemplate.query(sqlQuery, mapToFilm());
     }
 
     @Override
     public Film getFilmById(Integer id) {
         try {
-            String sqlQuery = "SELECT film_id, film_name, description, release_date, duration, rate, " +
-                    "mpa_id FROM Film WHERE film_id = ?";
+            String sqlQuery = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.rate, " +
+                    "mpa.mpa_id, mpa.mpa_name " +
+                    "FROM Film as f " +
+                    "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
+                    "WHERE film_id = ?";
             return jdbcTemplate.queryForObject(sqlQuery, mapToFilm(), id);
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("Film not exist");
@@ -100,10 +101,11 @@ public class FilmDaoStorageImpl implements FilmStorage {
         isDirectorExist(directorId);
         if (sortBy.equals(SortBy.YEAR)) {
             String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
-                    "f.rate, f.mpa_id " +
+                    "f.rate, mpa.mpa_id, mpa.mpa_name " +
                     "FROM FILM f " +
                     "JOIN DIRECTOR_FILM df ON f.film_id = df.film_id " +
                     "JOIN DIRECTOR d ON df.director_id = d.director_id " +
+                    "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
                     "WHERE df.director_id = ? " +
                     "ORDER BY f.release_date";
 
@@ -111,10 +113,11 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
         if (sortBy.equals(SortBy.LIKES)) {
             String query = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
-                    "f.rate, f.mpa_id " +
+                    "f.rate, mpa.mpa_id, mpa.mpa_name " +
                     "FROM FILM f " +
                     "LEFT JOIN Like_Film lf ON f.film_id = lf.film_id " +
                     "JOIN Director_Film df ON df.film_id = f.film_id " +
+                    "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
                     "WHERE df.director_id = ? " +
                     "GROUP BY f.film_id " +
                     "ORDER BY COUNT (lf.user_id)";
@@ -129,20 +132,24 @@ public class FilmDaoStorageImpl implements FilmStorage {
     public List<Film> searchFilmsByOneParameter(String query, FindBy param) {
         switch (param) {
             case TITLE:
-                String sqlByTitle = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
+                String sqlByTitle = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration," +
+                        "mpa.mpa_id, mpa.mpa_name " +
                         "FROM film f " +
                         "LEFT JOIN LIKE_FILM lf ON f.film_id = lf.film_id " +
+                        "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
                         "WHERE REPLACE(LOWER(film_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
                         "GROUP BY f.film_id " +
                         "ORDER BY COUNT(lf.like_id) DESC";
 
                 return jdbcTemplate.query(sqlByTitle, mapToFilm());
             case DIRECTOR:
-                String sqlByDirector = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
+                String sqlByDirector = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration," +
+                        "mpa.mpa_id, mpa.mpa_name " +
                         "FROM FILM f " +
                         "JOIN director_film df ON f.film_id = df.film_id " +
                         "JOIN director d ON d.director_id = df.director_id " +
                         "JOIN like_film lf ON lf.film_id = f.film_id " +
+                        "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
                         "WHERE REPLACE(LOWER(d.director_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
                         "GROUP BY f.film_id " +
                         "ORDER BY COUNT(lf.like_id) DESC";
@@ -157,11 +164,13 @@ public class FilmDaoStorageImpl implements FilmStorage {
     public List<Film> searchFilmsByBothParameters(String query, List<FindBy> params) {
         if (FindBy.TITLE.equals(params.get(0)) && FindBy.DIRECTOR.equals(params.get(1)) ||
                 FindBy.TITLE.equals(params.get(1)) && FindBy.DIRECTOR.equals(params.get(0))) {
-            String sqlByBothParams = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id " +
+            String sqlByBothParams = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration," +
+                    "mpa.mpa_id, mpa.mpa_name " +
                     "FROM FILM f " +
                     "LEFT JOIN director_film df ON f.film_id = df.film_id " +
                     "LEFT JOIN director d ON d.director_id = df.director_id " +
                     "LEFT JOIN like_film lf ON lf.film_id = f.film_id " +
+                    "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
                     "WHERE REPLACE(LOWER(f.film_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
                     "OR REPLACE(LOWER(d.director_name), ' ', '') LIKE LOWER ('%" + query + "%') " +
                     "GROUP BY f.film_id " +
@@ -179,9 +188,10 @@ public class FilmDaoStorageImpl implements FilmStorage {
         isUserExist(userId);
         isUserExist(friendId);
         String sql = "SELECT * FROM (SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
-                "f.rate, f.mpa_id, COUNT(lf.user_id) AS likes " +
+                "f.rate, mpa.mpa_id, mpa.mpa_name, COUNT(lf.user_id) AS likes " +
                 "FROM Film AS f " +
                 "JOIN Like_Film AS lf ON f.film_id = lf.film_id " +
+                "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
                 "WHERE lf.user_id = ?" +
                 "GROUP BY f.film_id) AS ulf " +
                 "JOIN " +
@@ -206,9 +216,10 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 "ORDER BY COUNT(lf.like_id) " +
                 "DESC LIMIT ?";
         StringBuilder query = new StringBuilder("SELECT f.film_id, f.film_name, f.description," +
-                " f.release_date, f.duration, f.mpa_id " +
+                " f.release_date, f.duration, mpa.mpa_id, mpa.mpa_name " +
                 "FROM Film AS f " +
-                "LEFT JOIN Like_Film AS lf ON f.film_id = lf.film_id ");
+                "LEFT JOIN Like_Film AS lf ON f.film_id = lf.film_id " +
+                "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id ");
         if (genreId == null && year == null) {
             String sqlString = query.append(queryEnd).toString();
             topFilm = jdbcTemplate.query(sqlString, mapToFilm(), count);
@@ -245,47 +256,48 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
     }
 
-    private RowMapper<Film> mapToFilm() {
-        return new RowMapper<Film>() {
-            @Override
-            public Film mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
-                Film film = new Film();
-                film.setId(rs.getInt("film_id"));
-                film.setName(rs.getString("film_name"));
-                film.setDescription(rs.getString("description"));
-                film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-                film.setDuration(rs.getInt("duration"));
-                film.setRate(insertLikes(rs.getInt("film_id")).size());
-                film.setMpa(insertMpa(rs.getInt("mpa_id")).get());
-                film.setGenres(new LinkedHashSet<>(insertGenres(film.getId())));
-                film.setDirectors(insertDirectors(film.getId()));
-                return film;
-            }
+    @Override
+    public void load(List<Film> films) {
+        if (films.isEmpty()) {
+            log.info("пустой список фильмов");
+            return;
+        }
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+
+        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+        Object[] filmIds = films.stream().map(Film::getId).toArray();
+
+        final String sqlQueryGenres = "SELECT gf.film_id, g.genre_id, g.genre_name " +
+                "FROM Genre_Film AS gf " +
+                "JOIN Genre AS g ON gf.genre_id = g.genre_id " +
+                "WHERE gf.film_id IN (" + inSql + ")";
+        jdbcTemplate.query(sqlQueryGenres, mapToFilmUsingGenres(filmById), filmIds);
+
+        final String sqlQueryDirectors = "SELECT df.film_id, d.director_id, d.director_name " +
+                "FROM Director_Film AS df " +
+                "JOIN Director AS d ON df.director_id = d.director_id " +
+                "WHERE df.film_id IN (" + inSql + ")";
+        jdbcTemplate.query(sqlQueryDirectors, mapToFilmUsingDirectors(filmById), filmIds);
+
+
+        final String sqlQueryRate = "SELECT film_id, COUNT(user_id) AS rate " +
+                "FROM Like_Film " +
+                "WHERE film_id IN (" + inSql + ") " +
+                "GROUP BY film_id";
+        log.info("{}", jdbcTemplate.query(sqlQueryRate, mapToFilmUsingRate(filmById), filmIds));
+    }
+
+    private RowMapper<Film> mapToFilmUsingGenres(Map<Integer, Film> filmById) {
+        return (rs, rowNum) -> {
+            Film film = filmById.get(rs.getInt("film_id"));
+            Genre genre = new Genre();
+            genre.setId(rs.getInt("genre_id"));
+            genre.setName(rs.getString("genre_name"));
+            film.addGenre(genre);
+            return film;
         };
-    }
-
-    private List<Integer> insertLikes(Integer filmId) {
-        String query = "SELECT user_id FROM Like_Film WHERE film_id=?";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(query, filmId);
-        List<Integer> likedUsers = new ArrayList<>();
-        while (sqlRowSet.next()) {
-            likedUsers.add(sqlRowSet.getInt("user_id"));
-        }
-        return likedUsers;
-    }
-
-    private Optional<Mpa> insertMpa(int id) {
-        String query = "SELECT mpa_id, mpa_name FROM Mpa WHERE mpa_id=?";
-        try {
-            Mpa mpa = jdbcTemplate.queryForObject(query,
-                    (rs, rowNum) -> new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")), id);
-            return Optional.ofNullable(mpa);
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
-    }
-
-    private List<Genre> insertGenres(int filmId) {
+        /*
+        private List<Genre> insertGenres(int filmId) {
         String query = "SELECT g.genre_id, g.genre_name " +
                 "FROM Genre g " +
                 "JOIN Genre_Film gf ON g.genre_id = gf.genre_id " +
@@ -301,24 +313,43 @@ public class FilmDaoStorageImpl implements FilmStorage {
         }
         return new ArrayList<>(set);
     }
+         */
+    }
 
-    private Set<Director> insertDirectors(Integer filmId) {
-        String sql = "SELECT d.director_id, d.director_name " +
-                "FROM Director_Film df " +
-                "JOIN Director d ON df.director_id = d.director_id " +
-                "WHERE df.film_id = ?";
-        List<Director> directors = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            int directorId = rs.getInt("director_id");
-            String directorName = rs.getString("director_name");
-            if (directorId == 0) {
-                throw new EntityNotFoundException("Director not found for id: " + directorId);
-            }
-            return Director.builder()
-                    .id(directorId)
-                    .name(directorName)
+    private RowMapper<Film> mapToFilmUsingDirectors(Map<Integer, Film> filmById) {
+        return (rs, rowNum) -> {
+            Film film = filmById.get(rs.getInt("film_id"));
+            Director director = Director.builder()
+                    .id(rs.getInt("director_id"))
+                    .name(rs.getString("director_name"))
                     .build();
-        }, filmId);
-        return new HashSet<>(directors);
+            film.addDirector(director);
+            return film;
+        };
+    }
+
+    private RowMapper<Film> mapToFilmUsingRate(Map<Integer, Film> filmById) {
+        return (rs, rowNum) -> {
+            Film film = filmById.get(rs.getInt("film_id"));
+            film.setRate(rs.getInt("rate"));
+            return film;
+        };
+    }
+
+    private RowMapper<Film> mapToFilm() {
+        return (rs, rowNum) -> {
+            Film film = new Film();
+            film.setId(rs.getInt("film_id"));
+            film.setName(rs.getString("film_name"));
+            film.setDescription(rs.getString("description"));
+            film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+            film.setDuration(rs.getInt("duration"));
+            Mpa mpa = new Mpa();
+            mpa.setId(rs.getInt("mpa_id"));
+            mpa.setName(rs.getString("mpa_name"));
+            film.setMpa(mpa);
+            return film;
+        };
     }
 
     private Map<String, Object> filmToMap(Film film) {

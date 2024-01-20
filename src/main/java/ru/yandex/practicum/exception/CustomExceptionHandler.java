@@ -1,6 +1,5 @@
 package ru.yandex.practicum.exception;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,6 @@ import java.util.Objects;
 
 @Slf4j
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class CustomExceptionHandler {
 
     @ExceptionHandler

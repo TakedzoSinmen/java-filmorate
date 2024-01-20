@@ -60,7 +60,9 @@ public class FilmService {
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        List<Film> result = filmStorage.getFilms();
+        filmStorage.load(result);
+        return result;
     }
 
     public Film addFilm(Film film) {
@@ -72,7 +74,9 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
+        filmStorage.load(List.of(film));
+        return film;
     }
 
     public void deleteFilmById(Integer id) {
@@ -80,18 +84,22 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByDirectorIdSortBy(Integer directorId, SortBy variable) {
-        return filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
+        List<Film> result = filmStorage.getFilmsByDirectorIdSortBy(variable, directorId);
+        filmStorage.load(result);
+        return result;
     }
 
-    // проверяем количество параметров в листе и уходим в соответсвующий метод
     public List<Film> searchFilmsByParams(String query, List<FindBy> params) {
-
         switch (params.size()) {
             case 1:
-                return filmStorage.searchFilmsByOneParameter(query, params.get(0));
+                List<Film> resultOneParam = filmStorage.searchFilmsByOneParameter(query, params.get(0));
+                filmStorage.load(resultOneParam);
+                return resultOneParam;
 
             case 2:
-                return filmStorage.searchFilmsByBothParameters(query, params);
+                List<Film> resultBothParam = filmStorage.searchFilmsByBothParameters(query, params);
+                filmStorage.load(resultBothParam);
+                return resultBothParam;
 
             default:
                 throw new EntityNotFoundException("Что то не так с параметрами");
@@ -99,10 +107,14 @@ public class FilmService {
     }
 
     public List<Film> getFriendCommonFilms(Integer userId, Integer friendId) {
-        return filmStorage.getFriendCommonFilms(userId, friendId);
+        List<Film> result = filmStorage.getFriendCommonFilms(userId, friendId);
+        filmStorage.load(result);
+        return result;
     }
 
     public List<Film> getTopFilmWithFilter(Integer count, Integer genreId, Integer year) {
-        return filmStorage.getTopFilmWithFilter(count, genreId, year);
+        List<Film> result = filmStorage.getTopFilmWithFilter(count, genreId, year);
+        filmStorage.load(result);
+        return result;
     }
 }
