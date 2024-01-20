@@ -1,6 +1,6 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Review;
 import ru.yandex.practicum.storage.api.ReviewStorage;
@@ -18,9 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Data
 @Slf4j
 @Repository
-@RequiredArgsConstructor
+@Validated
 public class ReviewDaoStorageImpl implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;

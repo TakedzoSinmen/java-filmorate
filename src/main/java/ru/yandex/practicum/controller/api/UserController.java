@@ -2,7 +2,6 @@ package ru.yandex.practicum.controller.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
@@ -15,7 +14,6 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
