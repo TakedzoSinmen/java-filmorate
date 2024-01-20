@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Review;
 import ru.yandex.practicum.storage.api.ReviewStorage;
@@ -21,6 +22,7 @@ import java.util.Objects;
 @Data
 @Slf4j
 @Repository
+@Validated
 public class ReviewDaoStorageImpl implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;

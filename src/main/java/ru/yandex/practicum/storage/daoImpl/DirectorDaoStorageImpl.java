@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.exception.BadRequestException;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.storage.api.DirectorStorage;
@@ -47,7 +46,6 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
 
     @Override
     public Director create(Director director) {
-        isValid(director);
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("Director")
                 .usingGeneratedKeyColumns("director_id");
@@ -86,20 +84,11 @@ public class DirectorDaoStorageImpl implements DirectorStorage {
                 .build();
     }
 
-    // Проверочный метод на существование режиссёра по id
     private void isExist(int id) {
         String sql = "SELECT * FROM Director WHERE director_id = ?";
         if (!jdbcTemplate.queryForRowSet(sql, id).next()) {
             log.debug("Director with id: {} was not found", id);
             throw new EntityNotFoundException(String.format("Director with id: %d was not found", id));
-        }
-    }
-
-    // Небольшая валидация режиссёра
-    static void isValid(Director director) {
-        if (director.getName().isBlank()) {
-            log.debug("Field 'name' cannot be empty");
-            throw new BadRequestException("Field 'name' cannot be empty");
         }
     }
 
