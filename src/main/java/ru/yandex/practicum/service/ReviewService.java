@@ -1,27 +1,28 @@
 package ru.yandex.practicum.service;
 
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Review;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
+import ru.yandex.practicum.storage.api.EventStorage;
 import ru.yandex.practicum.storage.api.ReviewStorage;
 
 import java.util.List;
 
-@Data
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
 
     private final ReviewStorage reviewStorage;
-    private final EventService eventService;
+    private final EventStorage eventStorage;
 
     public Review addReview(Review review) {
         Review createdReview = reviewStorage.addReview(review);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .userId(review.getUserId())
                 .eventType(EventType.REVIEW)
                 .operation(Operation.ADD)
@@ -33,7 +34,7 @@ public class ReviewService {
 
     public Review updateReview(Review review) {
         Review updatedReview = reviewStorage.updateReview(review);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .userId(review.getReviewId())
                 .eventType(EventType.REVIEW)
                 .operation(Operation.UPDATE)
@@ -46,7 +47,7 @@ public class ReviewService {
     public void deleteReview(Integer id) {
         Review review = getReviewById(id);
         reviewStorage.deleteReview(id);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .userId(review.getUserId())
                 .eventType(EventType.REVIEW)
                 .operation(Operation.REMOVE)

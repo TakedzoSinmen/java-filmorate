@@ -1,6 +1,6 @@
 package ru.yandex.practicum.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.model.Director;
 import ru.yandex.practicum.storage.api.DirectorStorage;
@@ -8,7 +8,7 @@ import ru.yandex.practicum.storage.api.DirectorStorage;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DirectorService {
 
     private final DirectorStorage directorStorage;

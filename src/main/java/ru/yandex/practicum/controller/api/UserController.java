@@ -8,7 +8,6 @@ import ru.yandex.practicum.model.Event;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.EventService;
-import ru.yandex.practicum.service.RecommendationService;
 import ru.yandex.practicum.service.UserService;
 
 import javax.validation.Valid;
@@ -23,7 +22,6 @@ public class UserController {
 
     private final UserService userService;
     private final EventService eventService;
-    private final RecommendationService recommendationService;
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
@@ -88,6 +86,6 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public List<Film> recommendations(@PathVariable(value = "id") Integer id) {
         log.debug("GET request received to receive recommendations to user with id = {}", id);
-        return recommendationService.recommendations(id);
+        return userService.recommendations(id);
     }
 }

@@ -15,8 +15,4 @@ public class EventService {
     public List<Event> getEventFeed(Integer id) {
         return eventStorage.getEventFeed(id);
     }
-
-    public void addEvent(Event event) {
-        eventStorage.addEvent(event);
-    }
 }
