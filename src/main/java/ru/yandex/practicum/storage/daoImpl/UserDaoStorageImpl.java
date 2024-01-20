@@ -1,6 +1,6 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -16,7 +16,7 @@ import java.util.*;
 
 @Slf4j
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserDaoStorageImpl implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;

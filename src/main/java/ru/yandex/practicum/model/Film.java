@@ -10,10 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -32,7 +29,8 @@ public class Film {
     @Positive
     private Integer duration;
     private Integer rate;
-    private List<Genre> genres = new ArrayList<>();
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    @NotNull
     private Mpa mpa;
     private Set<Director> directors = new HashSet<>();
 

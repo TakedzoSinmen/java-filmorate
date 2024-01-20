@@ -14,6 +14,7 @@ import ru.yandex.practicum.storage.api.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,10 +58,10 @@ public class RecommendationService {
                 film.setDuration(rs.getInt("duration"));
                 film.setRate(likeStorage.getLikesByFilmId(rs.getInt("film_id")).size());
                 film.setMpa(mpaStorage.getMpaById(rs.getInt("mpa_id")).get());
-                film.setGenres(genreStorage.getGenresByFilmId(film.getId()));
+                film.setGenres(new LinkedHashSet<>(genreStorage.getGenresByFilmId(film.getId())));
                 film.setDirectors(
                         jdbcTemplate.query("SELECT director_id FROM Director_Film WHERE film_id = ?",
-                                (resultSet, rowNumber) -> resultSet.getInt("director_id"), film.getId())
+                                        (resultSet, rowNumber) -> resultSet.getInt("director_id"), film.getId())
                                 .stream()
                                 .map(directorService::getDirectorById)
                                 .collect(Collectors.toSet()));
