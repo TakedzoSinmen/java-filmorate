@@ -1,6 +1,5 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
