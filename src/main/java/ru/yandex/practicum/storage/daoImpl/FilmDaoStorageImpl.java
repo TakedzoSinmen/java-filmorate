@@ -85,9 +85,13 @@ public class FilmDaoStorageImpl implements FilmStorage {
                     .stream()
                     .distinct()
                     .collect(Collectors.toList()));
+
+            List<Object[]> genreParams = new ArrayList<>();
             for (Genre genre : film.getGenres()) {
-                jdbcTemplate.update(insertGenreQuery, filmId, genre.getId());
+                genreParams.add(new Object[]{filmId, genre.getId()});
             }
+            jdbcTemplate.batchUpdate(insertGenreQuery, genreParams);
+
         } else {
             String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
@@ -97,9 +101,11 @@ public class FilmDaoStorageImpl implements FilmStorage {
             jdbcTemplate.update(querySql, filmId);
             String insertDirectorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?, ?)";
             film.setDirectors(new HashSet<>(film.getDirectors()));
+            List<Object[]> directorParams = new ArrayList<>();
             for (Director director : film.getDirectors()) {
-                jdbcTemplate.update(insertDirectorQuery, filmId, director.getId());
+                directorParams.add(new Object[]{filmId, director.getId()});
             }
+            jdbcTemplate.batchUpdate(insertDirectorQuery, directorParams);
         } else {
             String querySql = "DELEtE FROM Director_Film WHERE film_id =?";
             jdbcTemplate.update(querySql, filmId);
