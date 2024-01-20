@@ -16,10 +16,10 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
-@Validated
 public class FilmController {
 
     private final FilmService filmService;

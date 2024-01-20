@@ -33,6 +33,7 @@ public class Film {
     private Integer duration;
     private Integer rate;
     private List<Genre> genres = new ArrayList<>();
+    @NotNull
     private Mpa mpa;
     private Set<Director> directors = new HashSet<>();
 

@@ -39,29 +39,14 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 .usingGeneratedKeyColumns("film_id");
         Number key = simpleJdbcInsert.executeAndReturnKey(filmToMap(film));
         film.setId((Integer) key);
-        if (!film.getGenres().isEmpty()) {
-            String genreQuery = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?,?)";
-            List<Object[]> genreParams = new ArrayList<>();
-            for (Genre genre : film.getGenres()) {
-                genreParams.add(new Object[]{film.getId(), genre.getId()});
-            }
-            jdbcTemplate.batchUpdate(genreQuery, genreParams);
-        }
-        if (!film.getDirectors().isEmpty()) {
-            String directorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
-            List<Object[]> directorParams = new ArrayList<>();
-            for (Director director : film.getDirectors()) {
-                directorParams.add(new Object[]{film.getId(), director.getId()});
-            }
-            jdbcTemplate.batchUpdate(directorQuery, directorParams);
-        }
+        genreParamsAdd(film);
+        directorParamsAdd(film);
         log.debug("Film with ID {} saved.", film.getId());
         return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
-        int filmId = film.getId();
         String query = "UPDATE Film SET film_name=?, description=?, release_date=?, duration=?, rate =?, mpa_id=? " +
                 "WHERE film_id=?";
         int updateResult = jdbcTemplate.update(query,
@@ -71,45 +56,14 @@ public class FilmDaoStorageImpl implements FilmStorage {
                 film.getDuration(),
                 film.getRate(),
                 film.getMpa().getId(),
-                filmId);
+                film.getId());
         if (updateResult > 0) {
-            log.debug("Film with ID {} has been updated.", filmId);
+            log.debug("Film with ID {} has been updated.", film.getId());
         } else {
-            throw new EntityNotFoundException("Film not founded for update by ID=" + filmId);
+            throw new EntityNotFoundException("Film not founded for update by ID=" + film.getId());
         }
-        if (!film.getGenres().isEmpty()) {
-            String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
-            jdbcTemplate.update(querySql, filmId);
-            String insertGenreQuery = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?, ?)";
-            film.setGenres(film.getGenres()
-                    .stream()
-                    .distinct()
-                    .collect(Collectors.toList()));
-
-            List<Object[]> genreParams = new ArrayList<>();
-            for (Genre genre : film.getGenres()) {
-                genreParams.add(new Object[]{filmId, genre.getId()});
-            }
-            jdbcTemplate.batchUpdate(insertGenreQuery, genreParams);
-
-        } else {
-            String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
-            jdbcTemplate.update(querySql, filmId);
-        }
-        if (!film.getDirectors().isEmpty()) {
-            String querySql = "DELETE FROM Director_Film WHERE film_id =?";
-            jdbcTemplate.update(querySql, filmId);
-            String insertDirectorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?, ?)";
-            film.setDirectors(new HashSet<>(film.getDirectors()));
-            List<Object[]> directorParams = new ArrayList<>();
-            for (Director director : film.getDirectors()) {
-                directorParams.add(new Object[]{filmId, director.getId()});
-            }
-            jdbcTemplate.batchUpdate(insertDirectorQuery, directorParams);
-        } else {
-            String querySql = "DELEtE FROM Director_Film WHERE film_id =?";
-            jdbcTemplate.update(querySql, filmId);
-        }
+        genreParamsUpdate(film);
+        directorParamsUpdate(film);
         return film;
     }
 
@@ -369,5 +323,65 @@ public class FilmDaoStorageImpl implements FilmStorage {
         values.put("duration", film.getDuration());
         values.put("mpa_id", film.getMpa().getId());
         return values;
+    }
+
+    private void directorParamsAdd(Film film) {
+        if (!film.getDirectors().isEmpty()) {
+            String directorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?,?)";
+            List<Object[]> directorParams = new ArrayList<>();
+            for (Director director : film.getDirectors()) {
+                directorParams.add(new Object[]{film.getId(), director.getId()});
+            }
+            jdbcTemplate.batchUpdate(directorQuery, directorParams);
+        }
+    }
+
+    private void genreParamsAdd(Film film) {
+        if (!film.getGenres().isEmpty()) {
+            String genreQuery = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?,?)";
+            List<Object[]> genreParams = new ArrayList<>();
+            for (Genre genre : film.getGenres()) {
+                genreParams.add(new Object[]{film.getId(), genre.getId()});
+            }
+            jdbcTemplate.batchUpdate(genreQuery, genreParams);
+        }
+    }
+
+    private void genreParamsUpdate(Film film) {
+        if (!film.getGenres().isEmpty()) {
+            String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
+            jdbcTemplate.update(querySql, film.getId());
+            String insertGenreQuery = "INSERT INTO Genre_Film (film_id, genre_id) VALUES (?, ?)";
+            film.setGenres(film.getGenres()
+                    .stream()
+                    .distinct()
+                    .collect(Collectors.toList()));
+            List<Object[]> genreParams = new ArrayList<>();
+            for (Genre genre : film.getGenres()) {
+                genreParams.add(new Object[]{film.getId(), genre.getId()});
+            }
+            jdbcTemplate.batchUpdate(insertGenreQuery, genreParams);
+
+        } else {
+            String querySql = "DELETE FROM Genre_Film WHERE film_id =?";
+            jdbcTemplate.update(querySql, film.getId());
+        }
+    }
+
+    private void directorParamsUpdate (Film film) {
+        if (!film.getDirectors().isEmpty()) {
+            String querySql = "DELETE FROM Director_Film WHERE film_id =?";
+            jdbcTemplate.update(querySql, film.getId());
+            String insertDirectorQuery = "INSERT INTO Director_Film (film_id, director_id) VALUES (?, ?)";
+            film.setDirectors(new HashSet<>(film.getDirectors()));
+            List<Object[]> directorParams = new ArrayList<>();
+            for (Director director : film.getDirectors()) {
+                directorParams.add(new Object[]{film.getId(), director.getId()});
+            }
+            jdbcTemplate.batchUpdate(insertDirectorQuery, directorParams);
+        } else {
+            String querySql = "DELEtE FROM Director_Film WHERE film_id =?";
+            jdbcTemplate.update(querySql, film.getId());
+        }
     }
 }
