@@ -1,5 +1,6 @@
 package ru.yandex.practicum.storage.api;
 
+import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
 
 import java.util.List;
@@ -24,4 +25,8 @@ public interface UserStorage {
     void addFriend(int userId, int friendId);
 
     List<User> searchForSameFriends(int userId, int idFriend);
+
+    List<Film> recommendations(Integer id);
+
+    void load(List<Film> films);
 }

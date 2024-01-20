@@ -10,6 +10,7 @@ import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.FindBy;
 import ru.yandex.practicum.model.enums.Operation;
 import ru.yandex.practicum.model.enums.SortBy;
+import ru.yandex.practicum.storage.api.EventStorage;
 import ru.yandex.practicum.storage.api.FilmStorage;
 import ru.yandex.practicum.storage.api.LikeStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
@@ -24,11 +25,11 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
-    private final EventService eventService;
+    private final EventStorage eventStorage;
 
     public boolean like(Integer filmId, Integer userId) {
         likeStorage.like(filmId, userId);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .userId(userId)
                 .eventType(EventType.LIKE)
                 .operation(Operation.ADD)
@@ -49,7 +50,7 @@ public class FilmService {
         userStorage.getUserById(userId);
         likeStorage.unLike(filmId, userId);
         log.debug("Удален лайк у фильма с  ID=" + filmId);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .userId(userId)
                 .eventType(EventType.LIKE)
                 .operation(Operation.REMOVE)

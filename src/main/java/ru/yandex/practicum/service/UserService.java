@@ -1,29 +1,31 @@
 package ru.yandex.practicum.service;
 
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
 import ru.yandex.practicum.model.Event;
+import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.model.enums.EventType;
 import ru.yandex.practicum.model.enums.Operation;
+import ru.yandex.practicum.storage.api.EventStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.List;
 
-@Data
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-    private final EventService eventService;
+    private final EventStorage eventStorage;
 
     public void addFriend(Integer coreId, Integer friendId) {
         userStorage.addFriend(coreId, friendId);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .timestamp(System.currentTimeMillis())
                 .userId(coreId)
                 .eventType(EventType.FRIEND)
@@ -35,7 +37,7 @@ public class UserService {
 
     public void removeFriend(Integer coreId, Integer friendId) {
         userStorage.removeFriend(coreId, friendId);
-        eventService.addEvent(Event.builder()
+        eventStorage.addEvent(Event.builder()
                 .timestamp(System.currentTimeMillis())
                 .userId(coreId)
                 .eventType(EventType.FRIEND)
@@ -79,5 +81,11 @@ public class UserService {
 
     public void deleteUserById(Integer id) {
         userStorage.deleteUserById(id);
+    }
+
+    public List<Film> recommendations(Integer id) {
+        List<Film> films = userStorage.recommendations(id);
+        userStorage.load(films);
+        return films;
     }
 }
