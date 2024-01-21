@@ -1,6 +1,6 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MpaStorageImpl implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -35,7 +35,7 @@ public class MpaStorageImpl implements MpaStorage {
 
     @Override
     public List<Mpa> getAllMpa() {
-        String query = "SELECT mpa_id, mpa_name FROM Mpa";
+        String query = "SELECT mpa_id, mpa_name FROM Mpa ORDER BY mpa_id";
         return jdbcTemplate.query(query, mpaRowMapper());
     }
 }

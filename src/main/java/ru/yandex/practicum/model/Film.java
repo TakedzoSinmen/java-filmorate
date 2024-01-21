@@ -10,24 +10,37 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Film {
     private int id;
-    @NotBlank(message = "Title cannot be empty")
-    @NotNull(message = "Title cannot be empty")
+    @NotBlank
+    @Size(max = 100)
     private String name;
+    @NotBlank
     @Size(max = 200, message = "Description cannot be more than 200 characters")
     private String description;
     @ValidReleaseDate
     private LocalDate releaseDate;
-    @Positive(message = "Film duration must be positive")
+    @NotNull
+    @Positive
     private Integer duration;
     private Integer rate;
-    private List<Genre> genres = new ArrayList<>();
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    @NotNull
     private Mpa mpa;
+    private Set<Director> directors = new HashSet<>();
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
+    }
 }

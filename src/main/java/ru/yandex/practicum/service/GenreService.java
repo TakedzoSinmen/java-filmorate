@@ -1,6 +1,6 @@
 package ru.yandex.practicum.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
@@ -10,7 +10,7 @@ import ru.yandex.practicum.storage.api.GenreStorage;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GenreService {
 
     private final GenreStorage genreStorage;

@@ -1,31 +1,48 @@
 package ru.yandex.practicum.service;
 
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.EntityNotFoundException;
+import ru.yandex.practicum.model.Event;
+import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.model.enums.EventType;
+import ru.yandex.practicum.model.enums.Operation;
+import ru.yandex.practicum.storage.api.EventStorage;
 import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.util.List;
 
 @Service
-@Data
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-
-    public UserService(@Qualifier("userDaoStorageImpl") UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final EventStorage eventStorage;
 
     public void addFriend(Integer coreId, Integer friendId) {
         userStorage.addFriend(coreId, friendId);
+        eventStorage.addEvent(Event.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(coreId)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friendId)
+                .build()
+        );
     }
 
     public void removeFriend(Integer coreId, Integer friendId) {
         userStorage.removeFriend(coreId, friendId);
+        eventStorage.addEvent(Event.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(coreId)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friendId)
+                .build()
+        );
     }
 
     public List<User> searchForUserFriends(Integer id) {
@@ -58,5 +75,15 @@ public class UserService {
         } catch (EmptyResultDataAccessException e) {
             throw new EntityNotFoundException("User with id " + id + " does not exist.");
         }
+    }
+
+    public void deleteUserById(Integer id) {
+        userStorage.deleteUserById(id);
+    }
+
+    public List<Film> recommendations(Integer id) {
+        List<Film> films = userStorage.recommendations(id);
+        userStorage.load(films);
+        return films;
     }
 }

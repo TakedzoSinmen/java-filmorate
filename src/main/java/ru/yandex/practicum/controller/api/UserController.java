@@ -1,21 +1,27 @@
 package ru.yandex.practicum.controller.api;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.model.Event;
+import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.service.EventService;
 import ru.yandex.practicum.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
-@AllArgsConstructor
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
@@ -37,26 +43,26 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Integer id) {
-        log.debug("GET request received to receive user by given id= {}", id);
+        log.debug("GET request received to receive user by given id = {}", id);
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable(value = "id") Integer id, @PathVariable(value = "friendId") Integer friendId) {
-        log.debug("PUT request received to add friendly relations by given user id= {} and friend id= {}", id, friendId);
+        log.debug("PUT request received to add friendly relations by given user id = {} and friend id = {}", id, friendId);
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(@PathVariable(value = "id") Integer id, @PathVariable(value = "friendId") Integer friendId) {
         log.debug("DELETE request received to remove entity from friend list by given core user " +
-                "id= {} and friend id= {}", id, friendId);
+                "id = {} and friend id = {}", id, friendId);
         userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     public List<User> searchForUserFriends(@PathVariable Integer id) {
-        log.debug("GET request received to receive user friend list by given user id= {} ", id);
+        log.debug("GET request received to receive user friend list by given user id = {} ", id);
         return userService.searchForUserFriends(id);
     }
 
@@ -64,5 +70,22 @@ public class UserController {
     public List<User> searchForSameFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
         log.debug("GET request received to search for common friends if they exist");
         return userService.searchForSameFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable(value = "id") Integer id) {
+        userService.deleteUserById(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getEventFeed(@PathVariable(value = "id") Integer id) {
+        log.debug("GET request received to receive event feed of user with id = {}", id);
+        return eventService.getEventFeed(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> recommendations(@PathVariable(value = "id") Integer id) {
+        log.debug("GET request received to receive recommendations to user with id = {}", id);
+        return userService.recommendations(id);
     }
 }

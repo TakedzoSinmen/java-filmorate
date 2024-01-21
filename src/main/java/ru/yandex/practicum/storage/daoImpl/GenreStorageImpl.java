@@ -1,6 +1,6 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GenreStorageImpl implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -38,7 +38,7 @@ public class GenreStorageImpl implements GenreStorage {
 
     @Override
     public List<Genre> getAll() {
-        String query = "SELECT genre_id, genre_name FROM Genre";
+        String query = "SELECT genre_id, genre_name FROM Genre ORDER BY genre_id";
         return jdbcTemplate.query(query, genreRowMapper());
     }
 

@@ -1,24 +1,25 @@
 package ru.yandex.practicum.storage.daoImpl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.exception.EntityNotFoundException;
-import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.model.*;
 import ru.yandex.practicum.storage.api.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
-@AllArgsConstructor
-@Qualifier("userDaoStorageImpl")
+@RequiredArgsConstructor
 public class UserDaoStorageImpl implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -30,7 +31,6 @@ public class UserDaoStorageImpl implements UserStorage {
         user.setLogin(rs.getString("login"));
         user.setName(rs.getString("name_user"));
         user.setBirthday(rs.getDate("birthday").toLocalDate());
-        user.setFriends(searchForUserFriends(rs.getInt("user_id")));
         return user;
     }
 
@@ -87,7 +87,7 @@ public class UserDaoStorageImpl implements UserStorage {
     }
 
     @Override
-    public void deleteUserById(int id) {
+    public void deleteUserById(Integer id) {
         String query = "DELETE FROM User_Filmorate WHERE user_id=?";
         int deleteResult = jdbcTemplate.update(query, id);
         if (deleteResult > 0) {
@@ -99,12 +99,19 @@ public class UserDaoStorageImpl implements UserStorage {
 
     @Override
     public List<User> searchForUserFriends(int id) {
-        String query = "SELECT uf.user_id, uf.email, uf.login, uf.name_user, uf.birthday " +
-                "FROM User_Filmorate uf " +
-                "JOIN Friendship f ON uf.user_id = f.friend_id " +
-                "WHERE f.user_id = ?";
-        log.debug("All friends of user by ID {} returned from DB", id);
-        return jdbcTemplate.query(query, this::mapToUser, id);
+        String userExistQuery = "SELECT COUNT(user_id) FROM User_Filmorate WHERE user_id = ?";
+        Integer userCount = jdbcTemplate.queryForObject(userExistQuery, Integer.class, id);
+        if (userCount == null || userCount == 0) {
+            log.debug("User with ID {} does not exist", id);
+            throw new EntityNotFoundException("User not detected by ID=" + id);
+        } else {
+            String query = "SELECT uf.user_id, uf.email, uf.login, uf.name_user, uf.birthday " +
+                    "FROM User_Filmorate uf " +
+                    "JOIN Friendship f ON uf.user_id = f.friend_id " +
+                    "WHERE f.user_id = ?";
+            log.debug("All friends of user by ID {} returned from DB", id);
+            return jdbcTemplate.query(query, this::mapToUser, id);
+        }
     }
 
     @Override
@@ -148,5 +155,108 @@ public class UserDaoStorageImpl implements UserStorage {
                     .orElseThrow(() -> new EntityNotFoundException("Common friend not exist in DB with ID=" + id)));
         }
         return commonFriends;
+    }
+
+    public List<Film> recommendations(Integer id) {
+        try {
+            String sql = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, f.mpa_id,\n" +
+                    "mpa.mpa_id, mpa.mpa_name\n" +
+                    "FROM Film as f\n" +
+                    "JOIN Like_Film as ml ON ml.film_id = f.film_id\n" +
+                    "JOIN Mpa as mpa ON f.mpa_id = mpa.mpa_id " +
+                    "WHERE ml.user_id IN (\n" +
+                    "    SELECT DISTINCT ml2.user_id\n" +
+                    "    FROM Like_Film as ml1\n" +
+                    "    JOIN Like_Film as ml2 ON ml1.film_id = ml2.film_id AND ml1.user_id != ml2.user_id\n" +
+                    "    WHERE ml1.user_id = ?\n" +
+                    ")\n" +
+                    "AND f.film_id NOT IN (\n" +
+                    "    SELECT film_id\n" +
+                    "    FROM Like_Film\n" +
+                    "    WHERE user_id = ?\n" +
+                    ")";
+            return jdbcTemplate.query(sql, mapToFilm(), id, id);
+        } catch (RuntimeException e) {
+            log.debug("cant find recommendations to user with id = {}, try to change user id", id);
+            throw new EntityNotFoundException("incorrect user id = " + id);
+        }
+    }
+
+    @Override
+    public void load(List<Film> films) {
+        if (films.isEmpty()) {
+            log.debug("No films to recommend");
+            return;
+        }
+        final Map<Integer, Film> filmById = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+
+        String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
+        Object[] filmIds = films.stream().map(Film::getId).toArray();
+
+        final String sqlQueryGenres = "SELECT gf.film_id, g.genre_id, g.genre_name " +
+                "FROM Genre_Film AS gf " +
+                "JOIN Genre AS g ON gf.genre_id = g.genre_id " +
+                "WHERE gf.film_id IN (" + inSql + ")";
+        jdbcTemplate.query(sqlQueryGenres, mapToFilmUsingGenres(filmById), filmIds);
+
+        final String sqlQueryDirectors = "SELECT df.film_id, d.director_id, d.director_name " +
+                "FROM Director_Film AS df " +
+                "JOIN Director AS d ON df.director_id = d.director_id " +
+                "WHERE df.film_id IN (" + inSql + ")";
+        jdbcTemplate.query(sqlQueryDirectors, mapToFilmUsingDirectors(filmById), filmIds);
+
+
+        final String sqlQueryRate = "SELECT film_id, COUNT(user_id) AS rate " +
+                "FROM Like_Film " +
+                "WHERE film_id IN (" + inSql + ") " +
+                "GROUP BY film_id";
+        log.info("{}", jdbcTemplate.query(sqlQueryRate, mapToFilmUsingRate(filmById), filmIds));
+    }
+
+    private RowMapper<Film> mapToFilmUsingGenres(Map<Integer, Film> filmById) {
+        return (rs, rowNum) -> {
+            Film film = filmById.get(rs.getInt("film_id"));
+            Genre genre = new Genre();
+            genre.setId(rs.getInt("genre_id"));
+            genre.setName(rs.getString("genre_name"));
+            film.addGenre(genre);
+            return film;
+        };
+    }
+
+    private RowMapper<Film> mapToFilmUsingDirectors(Map<Integer, Film> filmById) {
+        return (rs, rowNum) -> {
+            Film film = filmById.get(rs.getInt("film_id"));
+            Director director = Director.builder()
+                    .id(rs.getInt("director_id"))
+                    .name(rs.getString("director_name"))
+                    .build();
+            film.addDirector(director);
+            return film;
+        };
+    }
+
+    private RowMapper<Film> mapToFilmUsingRate(Map<Integer, Film> filmById) {
+        return (rs, rowNum) -> {
+            Film film = filmById.get(rs.getInt("film_id"));
+            film.setRate(rs.getInt("rate"));
+            return film;
+        };
+    }
+
+    private RowMapper<Film> mapToFilm() {
+        return (rs, rowNum) -> {
+            Film film = new Film();
+            film.setId(rs.getInt("film_id"));
+            film.setName(rs.getString("film_name"));
+            film.setDescription(rs.getString("description"));
+            film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+            film.setDuration(rs.getInt("duration"));
+            Mpa mpa = new Mpa();
+            mpa.setId(rs.getInt("mpa_id"));
+            mpa.setName(rs.getString("mpa_name"));
+            film.setMpa(mpa);
+            return film;
+        };
     }
 }
