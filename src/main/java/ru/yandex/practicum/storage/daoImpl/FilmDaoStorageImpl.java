@@ -296,24 +296,6 @@ public class FilmDaoStorageImpl implements FilmStorage {
             film.addGenre(genre);
             return film;
         };
-        /*
-        private List<Genre> insertGenres(int filmId) {
-        String query = "SELECT g.genre_id, g.genre_name " +
-                "FROM Genre g " +
-                "JOIN Genre_Film gf ON g.genre_id = gf.genre_id " +
-                "WHERE gf.film_id = ?";
-
-        List<Genre> list = jdbcTemplate.query(query, (rs, rowNum) -> new Genre(
-                rs.getInt("genre_id"),
-                rs.getString("genre_name")
-        ), filmId).stream().distinct().collect(Collectors.toList());
-        Set<Genre> set = new TreeSet<>(Comparator.comparingInt(Genre::getId));
-        for (Genre g : list) {
-            set.add(g);
-        }
-        return new ArrayList<>(set);
-    }
-         */
     }
 
     private RowMapper<Film> mapToFilmUsingDirectors(Map<Integer, Film> filmById) {
